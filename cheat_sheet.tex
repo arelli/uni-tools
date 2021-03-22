@@ -1,0 +1,129 @@
+\documentclass[12pt, a4paper]{report}  % report depends on what Im writing
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath}  % supports many of the math that I wil need
+\graphicspath{ {/} }
+
+\title{Control Systems First Lab}
+\author{Rafail Ellinitakis, Apostolos Gioumertakis, Vagelis Katsoupis}
+\date{March 2021}
+
+\begin{document}
+
+\maketitle  % using maketitle we print the title in the standard format
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%       ABSTRACT         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract}
+This is a simple paragraph at the beginning of the 
+document. A brief introduction about the main subject.
+\end{abstract}
+
+
+This is a test.
+													% The double empty line prompts
+													% LaTeX to create a paragraph afterwards.
+Some of the \textbf{greatest}
+discoveries in \underline{science} 
+were made by \textbf{\textit{accident}}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%      GRAPHICS          %
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\includegraphics{plot2}  % an image, taken as is
+\begin{figure}[h]  % an image or graphic, with a caption and a label and custom size
+    \centering
+    \includegraphics[width=1\textwidth]{plot2}
+    \caption{a nice plot}
+    \label{fig:mesh1}
+\end{figure}
+
+%As you can see in the figure \ref{fig:mesh1}, the 
+%function grows near 0. Also, in the page \pageref{fig:mesh1} 
+%is the same example.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%         LISTS           %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{itemize}
+  \item The individual entries are indicated with a black dot, a so-called bullet.
+  \item The text in the entries may be of any length.
+\end{itemize}
+
+\begin{enumerate}
+  \item This is the first entry in our list
+  \item The list numbers increase with each entry we add
+\end{enumerate}
+
+In physics, the mass-energy equivalence is stated 
+by the equation $E=mc^2$, discovered in 1905 by Albert Einstein.  % the $....$ operator tells us that its an inline mathematical expression
+
+The mass-energy equivalence is described by the famous equation
+\[ E=mc^2 \]
+discovered in 1905 by Albert Einstein.   % use the \[ ... \] operator to state a display mathem. expresison
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%             M A T H             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Subscripts in math mode are written as $a_b$ and superscripts are written as $a^b$. These can be combined an nested to write expressions such as
+
+\[ T^{i_1 i_2 \dots i_p}_{j_1 j_2 \dots j_q} = T(x^{i_1},\dots,x^{i_p},e_{j_1},\dots,e_{j_q}) \]
+ 
+We write integrals using $\int$ and fractions using $\frac{a}{b}$. Limits are placed on integrals using superscripts and subscripts:
+
+\[ \int_0^1 \frac{dx}{e^x} =  \frac{e-1}{e} \]
+
+Lower case Greek letters are written as $\omega$ $\delta$ etc. while upper case Greek letters are written as $\Omega$ $\Delta$.
+
+Mathematical operators are prefixed with a backslash as $\sin(\beta)$, $\cos(\alpha)$, $\log(x)$ etc.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%            CHAPTERS           %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{First Chapter}
+
+\section{Introduction}  % marks the beginning of a new section.
+						% Section numbering can be disabled by including a *, like \section*{}.
+This is the first section.
+
+
+\section{Second Section}
+
+This is the second one
+
+\subsection{First Subsection}
+First subsection of the second station
+
+\section*{Unnumbered Section}
+This is an unnumbered section
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%        TABLES               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% table without borders(you can use https://www.tablesgenerator.com/ to create LaTeX complex tables)
+\begin{center}
+\begin{tabular}{ c c c }  % tabular is the default LATEX method to create tables. {c c c}tells LATEX that there will be three columns and that the text inside each one of them must be centred. You can also use r to align the text to the right and l for left alignment. 
+ cell1 & cell2 & cell3 \\ 
+ cell4 & cell5 & cell6 \\  
+ cell7 & cell8 & cell9    
+\end{tabular}
+\end{center}  % wrap in center, so that it appears centered.
+
+%table with borders
+\begin{center}
+\begin{tabular}{ |c|c|c| }  % |c|c|c| declares that there are three columns, separated by a vertical line
+ \hline  % this inserts a horizontal line
+ cell1 & cell2 & cell3 \\ 
+ cell4 & cell5 & cell6 \\ 
+ cell7 & cell8 & cell9 \\ 
+ \hline  % bottom horizontal line
+\end{tabular}
+\end{center}
+
+\end{document}
