@@ -99,7 +99,7 @@
 \textbf{2 [20\%]}
 Κατασκευάστε πεπερασμένα αυτόματα (με μονοψήφιο αριθμό καταστάσεων) για τις παρακάτω γλώσσες:
 \\
-\textbf{(α)} $L = \big\{ w \in {a,b,c}^*: \text{ οι εμφανήσεις του $b$ είναι άρτιες και του $c$ περιττές}\}$\\
+\textbf{(α)} $L = \big\{ w \in {a,b,c}^*: \text{ οι εμφανήσεις του $b$ είναι άρτιες και του $c$ περιττές} \big\}$\\
 \sol{
 	\hspace*{0.5cm} {\em \textbf{Απάντηση:} }
 	Για να ξεκινήσω την λύση, απαριθμώ τις καταστάσεις που με ενδιαφέρουν: \\
@@ -151,8 +151,83 @@
 
 	\end{tikzpicture}
 	\end{center}
-	%ΛΥΣΗ
 }
+\textbf{(β)} $L = \big\{ w \in \{a,b\}^*:\text{ το πλήθος των $a$ στην  είναι άρτιο, και το πλήθος των $b$ είναι } 3m+2 (m \geq 2)\big\}$. \\
+\sol{
+	\hspace*{0.5cm} {\em \textbf{Απάντηση:} }
+	Χωρίζοντας την εκφώνηση σε δύο μικρότερα προβλήματα, μένουμε με την ανάγκη για ένα αυτόματο που θα αναγνωρίζει συμβολοσειρές με άρτιο αριθμό από $a$ μέσα του, και ένα που θα αναγνωρίζει $3m+2$ πλήθος $b$ σε κάποια συμβολοσειρά.Το ένα χρειάζεται 2 καταστάσεις και το άλλο 3 αντίστοιχα. Το τελικό μας αυτόματο θα έχει $2*3$ καταστάσεις, μία για κάθε συνδυασμό καταστάσεων. Παρατηρούμε αυτήν την ιδιότητα και στο γεγονός ότι ο γράφος μας είναι συμμετρικός στον οριζόντιο άξονα.
+	\\
+	\begin{center}
+		\begin{tikzpicture}[->,>=stealth',shorten >=0pt,node distance=2cm,auto]
+			\en
+			\node[state,initial] (q1)				{q$1$};  % this is on the top left, and it is a starting state
+			\node[state] (q2) [right of = q1] {q$2$};  % define where the other nodes will be presented
+			\node[state,accepting] (q3) [right of = q2] {q$3$};  % accepting means final state.
+			\node[state] (q4) [below of = q1] {q$4$};
+			\node[state] (q5) [below of = q2] {q$5$};
+			\node[state] (q6) [below of = q3] {q$6$};
+			
+			
+			\draw[->] (q1) [bend left=10] edge node {$b$}  (q2);
+			\draw[->] (q1) [bend left=30] edge node {$a$}  (q4); 
+			
+			\draw[->] (q2) [bend left=10] edge node {$b$}  (q3);
+			\draw[->] (q2) [bend left=30] edge node {$a$}  (q5);
+			
+			\draw[->] (q3) [bend right=60] edge node {$b$}  (q1);
+			\draw[->] (q3) [bend left=30] edge node {$a$}  (q6);
+			% notice the mirror pattern above and below this point.
+			\draw[->] (q4) [bend right=10] edge node {$b$}  (q5);
+			\draw[->] (q4) [bend left=30] edge node {$a$}  (q1);
+			
+			\draw[->] (q5) [bend right=10] edge node {$b$}  (q6);
+			\draw[->] (q5) [bend left=30] edge node {$a$}  (q2);
+			
+			\draw[->] (q6) [bend left=40] edge node {$b$}  (q4);
+			\draw[->] (q6) [bend left=30] edge node {$a$}  (q3);
+
+			
+		\end{tikzpicture}
+	\end{center}
+}
+\newpage
+\noindent
+\textbf{(γ)} $L = \big\{ w \in \{a,b\}^*:\text{η $w$ αρχίζει και τελειώνει με το ίδιο γραμμα, και ο αριθμός των $a$ είναι άρτιος}\big\}$. \\
+\sol{
+	\hspace*{0.5cm} {\em \textbf{Απάντηση:} }
+	Το κύριο "πρόβλημα" στην κατασκευή του αυτομάτου αυτού, είναι η επιλογή μεταξύ χαρακτήρων για να δούμε με ποιον χαρακτήρα θέλουμε να τερματίσει το αυτόματο. Αυτό μας ωθεί στο να χρησιμοποιήσουμε μία κατάσταση αρχική στην οποία δεν θα επιστρέψουμε ποτέ, και απλά θα επιλέγει ανάμεσα στα δύο σενάρια: αρχίζει και τελειώνει με $a$, ή αντίστοιχα με $b$.
+	
+	\begin{center}
+		\begin{tikzpicture}[->,>=stealth',shorten >=0pt,node distance=2cm,auto]
+			\en
+			\node[state,initial] (q1)				{q$1$};  % this is on the top left, and it is a starting state
+			\node[state, accepting] (q2) [right of = q1] {q$2$};  % define where the other nodes will be presented
+			\node[state] (q3) [right of = q2] {q$3$};  % accepting means final state.
+			\node[state] (q4) [below of = q2] {q$4$};
+			\node[state] (q5) [below of = q3] {q$5$};
+			\node[state,accepting] (q6) [below of = q4] {q$6$};
+			
+			\draw[->] (q1) [bend right=30] edge node {$a$}  (q2);
+			\draw[->] (q1) [bend right=30] edge node {$b$}  (q4);  
+			
+			\draw[->] (q2) [bend right=30] edge node {$a$}  (q3);
+			\draw[->] (q2) [loop above] edge node {$b$}  (q2); 
+			
+			\draw[->] (q3) [bend right=30] edge node {$a$}  (q2);
+			\draw[->] (q3) [loop above] edge node {$b$}  (q3); 
+
+			\draw[->] (q4) [bend right=30] edge node {$a$}  (q5);
+			\draw[->] (q4) [bend right=30] edge node {$b$}  (q6);
+			
+			\draw[->] (q5) [bend right=30] edge node {$a$}  (q4);
+			\draw[->] (q5) [loop above] edge node {$b$}  (q5);
+			
+			\draw[->] (q6) [bend right=30] edge node {$a$}  (q5);
+			\draw[->] (q6) [loop below] edge node {$b$}  (q6);
+			
+		\end{tikzpicture}
+	\end{center}
 
 
+}
 \end{document}
