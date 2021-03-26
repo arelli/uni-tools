@@ -1,5 +1,9 @@
 \documentclass[10pt,a4paper]{article}
 
+\usepackage{subfig}
+\usepackage[demo]{graphicx}
+
+
 \usepackage{./MGLassignment}
 \newcommand{\sol}[1]{#1} % #1 for solution
 \newcommand{\optional}[1]{#1} % #1 for showing optional
@@ -41,13 +45,13 @@
 \vspace*{-0,5cm}
 }
 
-\boldmark{1. Κανονικές Εκφράσεις}
+\boldmark{Κανονικές Εκφράσεις}
 \noindent
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %         Εκφώνηση 1                        %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\textbf{1.1 [15\%]}
+\textbf{1 [15\%]}
 Γράψτε Κανονικές Εκφράσεις για τις παρακάτω γλώσσες. \\
 \textbf{(α)} $L = \big\{ w \in \{a,b\}^*:\text{ η $w$ περιέχει ακριβώς 1 εμφάνιση του $b$ και άρτιο αριθμό απο $a$}\big\}$. \\
 \sol{
@@ -77,70 +81,78 @@
 \sol{
 	\hspace*{0.5cm} {\em \textbf{Απάντηση:} }
 	\\ 
-	Για την υλοποίηση της κανονικής έκφρασης, χρησιμοποιήθηκε ένα αυτόματο, το οποίο γίνεται καλύτερα εικόνα στο μάτι. Αρχικά ορίζουμε ένα αυτόματο με 3 καταστάσεις, μία για κάθε υπόλοιπο με την διαίρεση με το 3. Ώς τελική κατάσταση ορίζουμε αυτήν που αντιπροσωπεύει υπόλοιπο 2, καθώς ο αριθμός ου θέλουμε είναι $3k+2$. 
-	\begin{center}	
-		Αρχικά, έχουμε το αυτόματο: \\
-		\begin{tikzpicture}[->,>=stealth',shorten >=0pt,node distance=2cm,auto]
-			\en
-			\node[state,initial] (a)				{q$0$};  % this is on the top left, and it is a starting state
-			\node[state] (b) [below of = a] {q$1$};  % define where the other nodes will be presented
-			\node[state,accepting] (c) [right of = b] {q$2$};  % accepting means final state.
-						
-			\foreach \from/\to in {a/b, a/c, b/c}
-			% structure of an arrow:
-			%\draw[->] (from_node) [path_of_the_arrow] [edge] [node {text}] (to_node)
-			\draw[->] (a) [bend right=10] edge node {$b$}  (b);  % "node {...}" just adds the specifier on the arrow.
-			\draw[->] (a) [loop above] edge node {$a$} (a);
-			\draw[->] (b) [bend right=10] edge node {$b$} (c);
-			\draw[->] (b) [loop below] edge node {$a$} (b);
-			\draw[->] (c) [bend right=10] edge node {$b$} (a);
-			\draw[->] (c) [loop below] edge node {$a$} (c);
-		\end{tikzpicture}
-		
-		'Επειτα απο την πρώτη απλοποίηση, γίνεται: \\
-		\begin{tikzpicture}[->,>=stealth',shorten >=0pt,node distance=2cm,auto]
-			\en
-			\node[state,initial] (a){q$0$};
-			\node[state] (b) [below of = a] {q$1$};
-			\node[state,accepting] (c) [right of = b] {q$2$};
-			
-			\foreach \from/\to in {a/b, a/c, b/c}
-			\draw[->] (a) [bend right=10] edge node {$b$}  (b);
-			\draw[->] (a) [loop above] edge node {$a$} (a);
-			\draw[->] (b) [bend right=10] edge node {$b$} (c);
-			\draw[->] (b) [loop below] edge node {$a$} (b);
-			\draw[->] (c) [loop above] edge node {$a^*ba^*b$} (c);   
-			\draw[->] (c) [loop below] edge node {$a$} (c);
-		\end{tikzpicture}
-		
-		Συνεχίζουμε τις απλοποιήσεις(τo $q0$ μπορεί να πάει στον εαυτό του είτε μέσω του $(a^*ba^*b)$ είτε μέσω του $a$ ): \\
-		\begin{tikzpicture}[->,>=stealth',shorten >=0pt,node distance=2cm,auto]
-			\en
-			\node[state,initial] (a){q$0$};
-			\node[state] (b) [below of = a] {q$1$};
-			\node[state,accepting] (c) [right of = b] {q$2$};
-			
-			\foreach \from/\to in {a/b, a/c, b/c}
-			\draw[->] (a) [bend right=10] edge node {$b$}  (b);
-			\draw[->] (a) [loop above] edge node {$a$} (a);
-			\draw[->] (b) [bend right=10] edge node {$b$} (c);
-			\draw[->] (b) [loop below] edge node {$a$} (b);
-			\draw[->] (c) [loop above] edge node {$(a^*ba^*b) \cup a$} (c);   
-		\end{tikzpicture}
-		
-		Λίγο πριν το τέλος, μπορούμε να απαλείψουμε την κατάσταση $q1$ γράφοντας ώς κανονική έκφραση την διαδρομή απο το $q0$ έως το $q2$¨\\
-		\begin{tikzpicture}[->,>=stealth',shorten >=0pt,node distance=2cm,auto]
-			\en
-			\node[state,initial] (a){q$0$};
-			\node[state,accepting] (c) [right of = b] {q$2$};
-			
-			\foreach \from/\to in {a/b, a/c, b/c}
-			\draw[->] (a) [bend right=10] edge node {$a^*ba^*b$}  (c);
-			\draw[->] (c) [loop below] edge node {$(a^*ba^*b) \cup a$} (c);   
-		\end{tikzpicture}
-	\end{center}
-	Με βάση το παραπάνω αυτόματο και την (απλή) απλοποίηση του, βγαίνει η κανονική έκφραση:
-	$$a^*ba^*b((a^*ba^*b) \cup a)^*$$
+	Χωρίζουμε το πρόβλημα σε δύο κομμάτια: ένα είναι να έχω $3k$ $b$ μή συνεχόμενα, και το άλλο είναι να έχω επιπλέον δύο $b$ επίσης μη συνεχόμενα.
+	\begin{itemize}
+		\item Για το πρώτο μέρος, έχω:
+		$$a^*ba^+ba^+ba^*$$
+		\item Για το δεύτερο:
+		$$ba^+ba^*$$
+	\end{itemize}
+	
+	Τελικά καταλήγω με την παρακάτω υλοποίηση, με \en Kleene Star \gr σε όλη την πρώτη πρόταση, καθώς μπορεί να χρησιμοποιηθεί όσες φορές θέλουμε, και με θετική ολοκλήρωση στο τελευταίο $a$ καθώς είναι απαραίτητο για να μας διαχωρίζει απο το προτελευταίο $b$.
+	$$(a^*ba^+ba^+ba^+)^*ba^+ba^*$$
 }
+
+
+\boldmark{Κανονικές Εκφράσεις}
+\noindent
+\textbf{2 [20\%]}
+Κατασκευάστε πεπερασμένα αυτόματα (με μονοψήφιο αριθμό καταστάσεων) για τις παρακάτω γλώσσες:
+\\
+\textbf{(α)} $L = \big\{ w \in {a,b,c}^*: \text{ οι εμφανήσεις του $b$ είναι άρτιες και του $c$ περιττές}\}$\\
+\sol{
+	\hspace*{0.5cm} {\em \textbf{Απάντηση:} }
+	Για να ξεκινήσω την λύση, απαριθμώ τις καταστάσεις που με ενδιαφέρουν: \\
+	\begin{center}
+	\begin{tabular}{|c|c|c|}
+		\hline
+		\textbf{$b$ περιττό} & \textbf{$c$ περιττό} & $a$ \en Dont Care \gr \\
+		\hline
+		\textbf{$b$ περιττό} & \textbf{$c$ άρτιο} & $a$ \en Dont Care \gr \\
+		\hline
+		\textbf{$b$ άρτιο} &  \textbf{$c$ περιττό} & $a$ \en Dont Care \gr  \\
+		\hline
+		\textbf{$b$ άρτιο} & \textbf{$c$ άρτιο} & $a$ \en Dont Care \gr  \\
+		\hline
+		... & ... &  ...  \\
+		\hline
+	\end{tabular}
+	\end{center}
+	
+	Χωρίζω τα παραπάνω σε 4 διακριτές καταστάσεις, \textbf{\en ObEc=$q_1$(odd b even c), EbEc=$q_0$,EbOc=$q_3$ \gr και \en ObOc=$q_2$\gr, με τελική κατάσταση το \en EbOc \gr.}
+	\\
+	\begin{center}
+	\begin{tikzpicture}[->,>=stealth',shorten >=0pt,node distance=2cm,auto]
+		\en
+		\node[state,initial] (EbEc)				{q$0$};  % this is on the top left, and it is a starting state
+		\node[state] (ObEc) [below of = EbEc] {q$1$};  % define where the other nodes will be presented
+		\node[state,] (ObOc) [right of = ObEc] {q$2$};  % accepting means final state.
+		\node[state,accepting] (EbOc) [above of = ObOc] {q$3$};
+		
+		%\foreach \from/\to in {a/b, a/c, b/c}
+		% structure of an arrow:
+		%\draw[->] (from_node) [path_of_the_arrow] [edge] [node {text}] (to_node)
+		% Draw the arrows from the EbEc node:
+		\draw[->] (EbEc) [bend right=30] edge node {$c$}  (EbOc); 
+		\draw[->] (EbEc) [loop above] edge node {$a$}  (EbEc);
+		\draw[->] (EbEc) [bend right=30] edge node {$b$}  (ObEc);
+		% Draw the arrows from the ObEc node:
+		\draw[->] (ObEc) [loop below] edge node {$a$}  (ObEc);
+		\draw[->] (ObEc) [bend right=30] edge node {$b$}  (EbEc);
+		\draw[->] (ObEc) [bend right=30] edge node {$c$}  (ObOc);
+		% Draw the arrows from the EbOc node:
+		\draw[->] (EbOc) [loop above] edge node {$a$}  (EbOc);
+		\draw[->] (EbOc) [bend right=30] edge node {$b$}  (ObOc);
+		\draw[->] (EbOc) [bend right=30] edge node {$c$}  (EbEc);
+		% Draw the arrows from the ObOc node:
+		\draw[->] (ObOc) [loop below] edge node {$a$}  (ObOc);
+		\draw[->] (ObOc) [bend right=30] edge node {$b$}  (EbOc);
+		\draw[->] (ObOc) [bend right=30] edge node {$c$}  (ObEc);
+
+	\end{tikzpicture}
+	\end{center}
+	%ΛΥΣΗ
+}
+
 
 \end{document}
