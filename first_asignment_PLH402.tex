@@ -277,10 +277,10 @@
 		Ξεκινάμε ελέγχοντας τις διαδρομές απο την κάθε κατάσταση της $E(q_1)$, δηλαδή της πρώτης μας σύνθετης κατάστασης, και συνεχίζουμε ομαδοποιώντας διαδρομές τις οποίες εντάσσουμε σε σύνθετες καταστάσεις του τελικού, ντετερμινιστικού αυτομάτου :
 		\newpage
 		\begin{itemize}  % use \xrightarrow, the other commands are noto gonna produce an arrow in the center of the line.
-			\item $q_1  \xrightarrow{a}  q_3$,\quad \quad $q_1  \xrightarrow{_b}  X  $ 
-			\item $q_2  \xrightarrow{a}  X$, \quad \quad $q_2  \xrightarrow{_b}  q_4  $ 
-			\item $q_3  \xrightarrow{a}  q_2$,\quad \quad $q_3  \xrightarrow{_b}  q_1  $ 
-			\item $q_4  \xrightarrow{a}  X$,\quad \quad $q_4  \xrightarrow{_b}  q_5  $ 
+			\item $q_1  \xrightarrow{a}  Ε(q_3) = \{q_3\}$,\quad \quad $q_1  \xrightarrow{_b}  X  $ 
+			\item $q_2  \xrightarrow{a}  X$, \quad \quad $q_2  \xrightarrow{_b}  Ε(q_4) = \{q_4\}  $ 
+			\item $q_3  \xrightarrow{a}  E(q_2) = \{q_1,q_2,q_3\}$,\quad \quad $q_3  \xrightarrow{_b}  E(q_1) = \{q_1,q_3\}  $ 
+			\item $q_4  \xrightarrow{a}  X$,\quad \quad $q_4  \xrightarrow{_b}  E(q_5) = \{q_1,q_2,q_3,q_5\} $ 
 			\item $q_5  \xrightarrow{a}  q_5$,\quad \quad $q_5  \xrightarrow{_b}  X  $ 
 		\end{itemize}
 		H αρχική κατάσταση του \en NDFS \gr είναι η $q_1$, οπότε ξεκινάμε οριζοντας έναν κόμβο για την $E(q_1)$, που είναι η αρχική κατάσταση του \en DFS \gr μας:
@@ -295,84 +295,18 @@
 		\textbf{Γενικός κανόνας:} Αφού ορίσουμε την αρχική κατάσταση όπως παραπάνω, ελέγχουμε για την κάθε σύνθετη κατάσταση που δείχνουν τα μέλη της για ένα συγκεκριμένο σύμβολο του αλφαβήτου μας, και με την ένωση αυτών είτε δημιουργούμε νέες σύνθετες καταστάσεις, είτε δείχνουμε σε ήδη υπάρχουσες σύνθετες. Αυτό γίνεται αναδρομικά, δηλαδή μέχρι να μην μου δημιουργούνται νέες καταστάσεις και να έχω εξαντλήσει όλες τις επιλογές μου.
 		
 		
-		Στην παραπάνω λίστα μεταβάσεων, έχουμε οτι $q_1  \xrightarrow{a}  q_3$, $q_3  \xrightarrow{_a}  q_2 $, και  $q_1  \xrightarrow{_b}  X$, $q_3  \xrightarrow{_b}  q_1$, άρα ορίζουμε μία νέα κατάσταση στην οποία \textbf{μεταβαίνουμε μέσω $a$ και εμπεριέχει τις $\{q_3,q_2\}$}, \textbf{και με $b$ σε μία $\{q_1\}$}(προσοχή: είναι και αυτή σύνθετη κατάσταση, παρόλο που αποτελείται από μόνο μία).
+		Στην παραπάνω λίστα μεταβάσεων, έχουμε οτι $q_1  \xrightarrow{a}  E(q_3) = \{q_3\}$, $q_3  \xrightarrow{_a}  E(q_2)=\{q_1,q_2,q_3\} $, και  $q_1  \xrightarrow{_b}  X$, $q_3  \xrightarrow{_b}  E(q_1) = \{q_1,q_3\}$, άρα ορίζουμε μία νέα κατάσταση στην οποία \textbf{μεταβαίνουμε μέσω $a$ και εμπεριέχει τις $E(q_3) \ cup E(q_2) = \{q_3,q_2,q_1\}$}, \textbf{και με $b$ σε μία $E(q_1)=\{q_1,q_3\}$}.
 		\begin{center}
 			\begin{tikzpicture}[->,>=stealth',shorten >=0pt,node distance=2cm,auto]
 				\en
 				\node[state,initial] (q1)	{$q_1,q_3$}; 
-				\node[state] (q2) [right of = q1]	{$q_2,q_3$};
-				\node[state] (q3) [below of = q2]	{$q_1$};
+				\node[state] (q2) [right of = q1]	{$q_1,q_2,q_3$};
+				\node[state] (q3) [below of = q2]	{$q_1,q_3$};
 				\draw[->] (q1) [bend left=20] edge node {$a$}  (q2);
 				\draw[->] (q1) [bend right=20] edge node {$b$}  (q3);
 
 			\end{tikzpicture}
 		\end{center}
-		Εξετάζοντας τις επιλογές της κατάστασης $\{q_2,q_3\}$ για $a$, έχω οτι δείχνει στο $\emptyset \cup \{q_2\} = \{q_2\}$ ενώ για $b$ έχω $\{q_4,q_1\}$. Για την κατάσταση $\{q_1\}$, έχω οτι για $a$ πάω στο $\{q_3\}$ και για $b$ πουθενά.
-		\begin{center}
-			\begin{tikzpicture}[->,>=stealth',shorten >=0pt,node distance=2cm,auto]
-				\en
-				\node[state,initial] (q1)	{$q_1,q_3$}; 
-				\node[state] (q2) [right of = q1]	{$q_2,q_3$};
-				\node[state] (q3) [below of = q2]	{$q_1$};
-				\node[state] (q4) [right of = q2]	{$q_2$};
-				\node[state] (q5) [right of = q3]	{$q_1,q_4$};
-				\node[state] (q6) [left of = q3]	{$q_3$};
-				
-				\draw[->] (q1) [bend left=20] edge node {$a$}  (q2);
-				\draw[->] (q1) [bend right=20] edge node {$b$}  (q3);
-				
-				\draw[->] (q2) [bend left=20] edge node {$a$}  (q4);
-				\draw[->] (q2) [bend right=20] edge node {$b$}  (q5);
-				
-				\draw[->] (q3) [bend left=20] edge node {$a$}  (q6);
-				
-			\end{tikzpicture}
-		\end{center}
-	Συνεχίζω ακολουθώντας τις διαδρομές για τις 3 νέες σύνθετες καταστάσεις μου. Συγκεκριμένα(γραμμένα σε πιο σαφή έκφραση, αφού κατανοήσαμε τα παραπάνω), έχω: 
-	$$\{q_3\} \xrightarrow{a} \{q_2\}\text{ (υπάρχει)}$$
-	$$\{q_3\} \xrightarrow{b} \{q_1\}\text{ (υπάρχει)}$$
-	
-	$$\{q_2\} \xrightarrow{a} \emptyset = \{\}\text{ (δημιουργώ \en drain \gr εδω μάλλον)}$$
-	$$\{q_2\} \xrightarrow{b} \{q_4\}\text{ (δεν υπάρχει, δημιουργώ νέα)}$$
-	
-	$$\{q_1,q_4\} \xrightarrow{a} \{q_3\} \cup \emptyset = \{q_3\} \text{ (υπάρχει)}$$
-	$$\{q_1,q_4\} \xrightarrow{b} \emptyset \cup \{q_5\} = \{q_5\} \text{ (δεν υπάρχει, δημιουργώ νέα)}$$
-	Άρα καταλήξαμε σε 3 νέες συνδέσεις και 2(ή 3;) νέες καταστάσεις.
-	\begin{center}
-		\begin{tikzpicture}[->,>=stealth',shorten >=0pt,node distance=2cm,auto]
-			\en
-			\node[state,initial] (q1)	{$q_1,q_3$}; 
-			\node[state] (q2) [right of = q1]	{$q_2,q_3$};
-			\node[state] (q3) [below of = q2]	{$q_1$};
-			\node[state] (q4) [right of = q2]	{$q_2$};
-			\node[state] (q5) [right of = q3]	{$q_1,q_4$};
-			\node[state] (q6) [below of = q5]	{$q_3$};
-			\node[state] (q7) [right of = q6]	{$q_5$};
-			\node[state] (q8) [right of = q6]	{$q_4$};
-			
-			\draw[->] (q1) [bend left=20] edge node {$a$}  (q2);
-			\draw[->] (q1) [bend right=20] edge node {$b$}  (q3);
-			
-			\draw[->] (q2) [bend left=20] edge node {$a$}  (q4);
-			\draw[->] (q2) [bend right=20] edge node {$b$}  (q5);
-			
-			\draw[->] (q3) [bend left=20] edge node {$a$}  (q6);
-			
-			%\draw[->] (q4) [bend right=20] edge node {$a$}  (q6); Maybe Drain here
-			\draw[->] (q4) [bend left=20] edge node {$b$}  (q7);
-			
-			\draw[->] (q5) [bend right=20] edge node {$a$}  (q6);
-			\draw[->] (q5) [bend left=20] edge node {$b$}  (q7);
-			
-			\draw[->] (q6) [bend right=50] edge node {$a$}  (q4);
-			\draw[->] (q6) [bend left=20] edge node {$b$}  (q3);
-			
-			
-		\end{tikzpicture}
-	\end{center}
-		
-		
-			
 	}
 
 \end{document}
