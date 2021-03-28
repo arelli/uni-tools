@@ -295,7 +295,7 @@
 		\textbf{Γενικός κανόνας:} Αφού ορίσουμε την αρχική κατάσταση όπως παραπάνω, ελέγχουμε για την κάθε σύνθετη κατάσταση που δείχνουν τα μέλη της για ένα συγκεκριμένο σύμβολο του αλφαβήτου μας, και με την ένωση αυτών είτε δημιουργούμε νέες σύνθετες καταστάσεις, είτε δείχνουμε σε ήδη υπάρχουσες σύνθετες. Αυτό γίνεται αναδρομικά, δηλαδή μέχρι να μην μου δημιουργούνται νέες καταστάσεις και να έχω εξαντλήσει όλες τις επιλογές μου.
 		
 		
-		Στην παραπάνω λίστα μεταβάσεων, έχουμε οτι $q_1  \xrightarrow{a}  E(q_3) = \{q_3\}$, $q_3  \xrightarrow{_a}  E(q_2)=\{q_1,q_2,q_3\} $, και  $q_1  \xrightarrow{_b}  X$, $q_3  \xrightarrow{_b}  E(q_1) = \{q_1,q_3\}$, άρα ορίζουμε μία νέα κατάσταση στην οποία \textbf{μεταβαίνουμε μέσω $a$ και εμπεριέχει τις $E(q_3) \ cup E(q_2) = \{q_3,q_2,q_1\}$}, \textbf{και με $b$ σε μία $E(q_1)=\{q_1,q_3\}$}.
+		Στην παραπάνω λίστα μεταβάσεων, έχουμε οτι $q_1  \xrightarrow{a}  E(q_3) = \{q_3\}$, $q_3  \xrightarrow{_a}  E(q_2)=\{q_1,q_2,q_3\} $, και  $q_1  \xrightarrow{_b}  X$, $q_3  \xrightarrow{_b}  E(q_1) = \{q_1,q_3\}$, άρα ορίζουμε μία νέα κατάσταση στην οποία \textbf{μεταβαίνουμε μέσω $a$ και εμπεριέχει τις $E(q_3) \cup E(q_2) = \{q_3,q_2,q_1\}$}, \textbf{και με $b$ σε μία $E(q_1)=\{q_1,q_3\}$}.
 		\begin{center}
 			\begin{tikzpicture}[->,>=stealth',shorten >=0pt,node distance=2cm,auto]
 				\en
@@ -307,6 +307,110 @@
 
 			\end{tikzpicture}
 		\end{center}
+	
+	Συνεχίζουμε ελέγχοντας που δείχνουν οι δύο νέες σύνθετες καταστάσεις μας:
+	$$\{q_1,q_2,q_3\} \xrightarrow{_a} \{q_3\} \cup \emptyset \cup \{q_1,q_2,q_3\} = \{q_1,q_2,q_3\} $$
+	 (άρα με $a$ πηγαίνει στον εαυτό του.)
+	$$\{q_1,q_2,q_3\} \xrightarrow{_b} \emptyset \cup \{q_4\} \cup \{q_1,q_3\} = \{q_1,q_3,q_4\} $$
+	 (άρα με $b$ πηγαίνει στην νέα κατάσταση $\{q_1,q_3,q_4\}$)
+	
+	
+	$$\{q_1,q_3\}  \xrightarrow{_a} \{q_3\} \cup \{q_1,q_2,q_3\} = \{q_1,q_2,q_3\}  $$
+	 (άρα με $a$ πηγαίνει στην κατάσταση $\{q_1,q_2,q_3\}$)
+	$$\{q_1,q_3\}  \xrightarrow{_b} \emptyset \cup \{q_1,q_3\} = \{q_1,q_3\}$$ 
+	(άρα με $b$ πηγαίνει στον εαυτό του.)
+	
+	
+	Συνεχίζουμε σχεδιάζοντας το επόμενο βήμα του αυτομάτου μας, που αναλύσαμε παραπάνω.
+	
+	\begin{center}
+		\begin{tikzpicture}[->,>=stealth',shorten >=0pt,node distance=2cm,auto]
+			\en
+			\node[state,initial] (q1)	{$q_1,q_3$}; 
+			\node[state] (q2) [right of = q1]	{$q_1,q_2,q_3$};
+			\node[state] (q3) [below of = q2]	{$q_1,q_3$};
+			\node[state] (q4) [right of = q3]	{$q_1,q_3,q_4$}; % newly added
+			
+			\draw[->] (q1) [bend left=20] edge node {$a$}  (q2);
+			\draw[->] (q1) [bend right=20] edge node {$b$}  (q3);
+			
+			\draw[->] (q2) [loop above] edge node {$a$}  (q2);
+			\draw[->] (q2) [bend right=20] edge node {$b$}  (q4);
+			
+			\draw[->] (q3) [bend right=20] edge node {$a$}  (q2);
+			\draw[->] (q3) [loop below] edge node {$b$}  (q2);
+			
+		\end{tikzpicture}
+	\end{center}
+	Έχουμε μείνει με μία νέα κατάσταση, για την οποία πρέπει να βρούμε τις μεταβάσεις της:
+	$$\{q_1,q_3,q_4\}  \xrightarrow{_a} \{q_3\} \cup \{q_1,q_2,q_3\} \cup \emptyset = \{q_1,q_2,q_3\} $$ 
+	(άρα με $a$ δείχνει στην κατάσταση $\{q_1,q_2,q_3\} $)
+	$$\{q_1,q_3,q_4\}  \xrightarrow{_b} \emptyset \cup \{q_1,q_3\} \cup \{q_1,q_2,q_3,q_5\} = \{q_1,q_2,q_3,q_5\} $$ 
+	(άρα εμ $b$ δείχνει στην νέα κατάσταση $\{q_1,q_2,q_3,q_5\} $)
+		\begin{center}
+		\begin{tikzpicture}[->,>=stealth',shorten >=0pt,node distance=3cm,auto]
+			\en
+			\node[state,initial] (q1)	{$q_1,q_3$}; 
+			\node[state] (q2) [right of = q1]	{$q_1,q_2,q_3$};
+			\node[state] (q3) [below of = q2]	{$q_1,q_3$};
+			\node[state] (q4) [right of = q3]	{$q_1,q_3,q_4$}; 
+			\node[state] (q5) [right of = q4]	{$q_1,q_2,q_3,q_5$}; % newly added
+			
+			\draw[->] (q1) [bend left=20] edge node {$a$}  (q2);
+			\draw[->] (q1) [bend right=20] edge node {$b$}  (q3);
+			
+			\draw[->] (q2) [loop above] edge node {$a$}  (q2);
+			\draw[->] (q2) [bend right=20] edge node {$b$}  (q4);
+			
+			\draw[->] (q3) [bend right=20] edge node {$a$}  (q2);
+			\draw[->] (q3) [loop below] edge node {$b$}  (q2);
+			
+			\draw[->] (q4) [bend right=20] edge node {$a$}  (q2);
+			\draw[->] (q4) [bend right=20] edge node {$b$}  (q5);
+			
+		\end{tikzpicture}
+	\end{center}
+	Έτσι, εχουμε μείνει με επίσης μία νέα κατάσταση, για την οποία πρέπει να βρούμε τις μεταβάσεις της:
+	$$\{q_1,q_2,q_3,q_5\}  \xrightarrow{_a} \{q_3\} \cup \emptyset \cup \{q_1,q_2,q_3\} \cup \{q_5\} = \{q_1,q_2,q_3,q_5\}   $$
+	(άρα με $a$ δείχνει στον εαυτό του.)
+	$$\{q_1,q_2,q_3,q_5\}  \xrightarrow{_b} \emptyset \cup \{q_4\} \cup \{q_1,q_3\} \cup \emptyset = \{q_1,q_3,q_4\}$$
+	(άρα με $b$ δείχνει σε ήδη υπάρχον κόμβο $\{q_1,q_3,q_4\}$)
+	
+	
+	Καθώς σε αυτό το βήμα δεν δημιουργήθηκαν νέες σύνθετες καταστάσεις, το αυτόματο μας σχεδόν είναι έτοιμο. Μένει μόνο να το σχεδιάσουμε και να βρούμε τις τελικές καταστάσεις. Αυτό γίνεται βλέποντας σε ποιές σύνθετες καταστάσεις εμπεριέχονται οι τελικές(ή η τελική) καταστάσεις του μή ντετερμινιστικού αυτομάτου μας. Στην περίπτωση μας η $q_4$ είναι τελική του \en NDFS \gr, άρα ώς τελική στο ντετερμινιστικό αυτόματο θα βάλουμε την μόνη κατάσταση που εμπεριέχει το $q_4$, δηλαδή την $\{q_1,q_3,q_4\}$.
+	\begin{center}
+		\begin{tikzpicture}[->,>=stealth',shorten >=0pt,node distance=3cm,auto]
+			\en
+			\node[state,initial] (q1)	{$q_1,q_3$}; 
+			\node[state] (q2) [right of = q1]	{$q_1,q_2,q_3$};
+			\node[state] (q3) [below of = q2]	{$q_1,q_3$};
+			\node[state, accepting] (q4) [right of = q3]	{$q_1,q_3,q_4$}; 
+			\node[state] (q5) [right of = q4]	{$q_1,q_2,q_3,q_5$}; % newly added
+			
+			\draw[->] (q1) [bend left=20] edge node {$a$}  (q2);
+			\draw[->] (q1) [bend right=20] edge node {$b$}  (q3);
+			
+			\draw[->] (q2) [loop above] edge node {$a$}  (q2);
+			\draw[->] (q2) [bend right=20] edge node {$b$}  (q4);
+			
+			\draw[->] (q3) [bend right=20] edge node {$a$}  (q2);
+			\draw[->] (q3) [loop below] edge node {$b$}  (q2);
+			
+			\draw[->] (q4) [bend right=20] edge node {$a$}  (q2);
+			\draw[->] (q4) [bend right=20] edge node {$b$}  (q5);
+			
+			\draw[->] (q5) [loop above] edge node {$a$}  (q5);
+			\draw[->] (q5) [bend left=40] edge node {$a$}  (q3);
+			
+			
+		\end{tikzpicture}
+	\end{center}
+	Με τα παραπάνω βήματα έχουμε ολοκληρώσει την μετατροπή από μή ντετερμινιστικό σε ντετερμινιστικό σύστημα.
 	}
+
+	\noindent
+	\textbf{(β)} Κατασκευάστε αναλυτικά την κανονική έκφραση για την $L(M)$ με σειρά απαλοιφής $q_5,q_4,q_3,q_2,q_1$ \\
+	
+
 
 \end{document}
