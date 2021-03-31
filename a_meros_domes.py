@@ -2,15 +2,12 @@ import os
 from os import path
 import binascii
 
-global rec_size
 rec_size = 32  # A record is 32 bytes long. 4 for the key and 28 for the data.
 
-global page_size  # how many bytes a page has.
+# how many bytes a page has.
 page_size = 5
 
-global file_pointer
 file_pointer = 0
-
 
 
 def charToBinary(string):
@@ -18,15 +15,16 @@ def charToBinary(string):
     data_a2b = binascii.a2b_uu(string)
     return data_a2b
 
+
 def BinaryToDecimal(binary):
-    binary1 = binary
     decimal, i, n = 0, 0, 0
-    while (binary != 0):
+    while binary != 0:
         dec = binary % 10
         decimal = decimal + dec * pow(2, i)
         binary = binary // 10
         i += 1
-    return (decimal)
+    return decimal
+
 
 def binarytoChar(bin_data):
     # str_data =' '
@@ -42,10 +40,10 @@ def binarytoChar(bin_data):
 
 
 class FileManager:
-    def __init__(self, page_size, rec_size):
-        self.page_size = page_size
-        self.rec_size = rec_size
-        self.fileBuffer = []  # size of the buffer must always be page_size(128 here)
+    def __init__(self, pagesize, recsize):
+        self.page_size = pagesize
+        self.rec_size = recsize
+        self.fileBuffer = ""  # size of the buffer must always be page_size(128 here)
         self.read_pos = 0  # the position in the file
         self.write_pos = 0  # 1 marks the beginning of the file
         self.numberOfPages = 0
@@ -58,23 +56,22 @@ class FileManager:
     def diskUsage(self):
         return self.disk_access_counter
 
-    def createFile(self,filename):
+    def createFile(self, filename):
         # check if file with name filename exists in the same directory. If not, it creates it.
         self.filename = filename
         if path.exists(filename):
             print("file exists!")
             os.remove(filename)
         try:
-            f = open(filename, "x")  # create the file
+            open(filename, "x")  # create the file
             print("new file " + str(filename) + " created.")
             return 1
-        except:
+        except Exception:
             print("cannot create file. Aborting")
             return 0
 
-    def openFile(self,filename):
+    def openFile(self, filename):
         # return the number of pages of the file
-        self.filename = filename
         self.file = open(filename, "w+")
         data = self.file.read()
         characters = len(data)
@@ -86,11 +83,11 @@ class FileManager:
     def readBlock(self, pos):
         try:
             self.file.seek(pos, 0)  # go to the location of the file pointer(pos) to start reading
-            self.fileBuffer = []
-            self.fileBuffer.append(self.file.read(page_size))  # read page_size bytes of characters from the file and append it to the buffer
+            self.fileBuffer = ""
+            self.fileBuffer = self.file.read(page_size)  # read page_size bytes from file and append it to buffer
             self.count()
             return 1
-        except:
+        except Exception:
             print('Could not read block with readBlock(). Exiting...')
             return 0
 
@@ -98,23 +95,24 @@ class FileManager:
     def readNextBlock(self):
         try:
             self.file.seek(self.read_pos, 0)  # go to the location of the file pointer(pos) to start reading
-            self.fileBuffer = []
-            self.fileBuffer.append(self.file.read(page_size))  # read from the file and append it to the buffer
+            self.fileBuffer = ""
+            self.fileBuffer = self.file.read(self.page_size)  # read from the file and append it to the buffer
             self.read_pos += page_size
             self.count()
             return 1
-        except:
+        except Exception:
             print('Could not read block with readNextBlock(). Exiting...')
             return 0
 
-    def writeBlock(self,pos):
+    def writeBlock(self, pos):
         try:
             self.file.seek(pos, 0)  # go to the location of the file pointer(pos) to start reading
             self.file.write(self.fileBuffer)
-            self.numberOfPages += 1
+            if pos == page_size*self.numberOfPages:  # like an append
+                self.numberOfPages += 1
             self.count()
             return 1
-        except:
+        except Exception:
             print('Could not write block with writeBlock(). Exiting...')
             return 0
 
@@ -122,37 +120,38 @@ class FileManager:
         try:
             self.file.seek(self.write_pos, 0)  # go to the location of the file pointer(pos) to start reading
             self.file.read()
-            self.file.write(self.fileBuffer)
+            self.file.write(str(self.fileBuffer))
             self.write_pos += page_size
             self.numberOfPages += 1
             self.count()
             return 1
-        except:
+        except Exception:
             print('Could not write block with writeNextBlock(). Exiting...')
             return 0
 
     def appendBlock(self):
-        data = self.file.read()
         try:
-            self.file.close()
-            self.file = open("self.filename")
-            self.file.seek(len(data), 0)  # can be donw by opening the file with "a" mode
-            self.file.write(self.fileBuffer)  # read  from the file and append it to the buffer
-            self.numberOfPages += 1
-            self.count()
-            return 1
-        except:
+            self.writeBlock(self.numberOfPages*page_size)
+        except Exception:
             print('Could not write block with appendtBlock(). Exiting...')
             return 0
 
-    def deleteBlock(self):
-        print("deleteBlock not yet implemented.")
+    def deleteBlock(self, position):  # position of the first character of the block we wanna delete
+        # read last page of the file on the main memory(seems ok!)
+        self.readBlock(self.numberOfPages*self.page_size-self.page_size)
+        # write it on the location of the deleted block (wtf u not workin)
+        self.writeBlock(position)
+        #delete the last page(seems ok for now)
+        self.file.seek(self.numberOfPages*self.page_size-self.page_size)
+        self.file.truncate()
+        # decrement the numberOfPages counter(certainly ok)
+        self.numberOfPages -= 1
 
     def closeFile(self):
         try:
             self.file.close()
             return 1
-        except:
+        except Exception:
             print("closeFile() could not close the file.")
             return 0
 
@@ -164,11 +163,11 @@ testtext = "test.txt"
 file1.createFile(testtext)
 file1.openFile(testtext)
 
-file1.fileBuffer = "AZTEK"
+file1.fileBuffer = "AZTE,"
 file1.writeNextBlock()
-file1.fileBuffer = "KARMA"
+file1.fileBuffer = "KARM,"
 file1.writeNextBlock()
-file1.fileBuffer = "PENCE"
+file1.fileBuffer = "PENC,"
 file1.writeNextBlock()
 
 file1.readNextBlock()
@@ -183,10 +182,22 @@ print(file1.fileBuffer)
 file1.readNextBlock()
 print(file1.fileBuffer)
 
-file1.fileBuffer = "tEsT"
-file1.writeBlock(3)
+file1.fileBuffer = "TEST,"
+file1.writeBlock(10)
 
 print(file1.diskUsage())
+
+file1.fileBuffer = "1111,"
+file1.appendBlock()
+
+file1.fileBuffer = "2222,"
+file1.appendBlock()
+
+file1.deleteBlock(5)
+# file1.fileBuffer = "STAR,"
+# file1.writeBlock(0)
+
+file1.closeFile()
 
 
 # all the above functions are working properly.
