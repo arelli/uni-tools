@@ -188,9 +188,6 @@ for i in range(len(numbers)):
         data = ""
         file1.count()
 
-# file1.fileBuffer = data
-# file1.writeBlock(0)
-
 print("FILE ACCESS COUNTER: " + str(file1.diskUsage()))
 
 
