@@ -10,33 +10,25 @@ page_size = 5
 file_pointer = 0
 
 
-def charToBinary(string):
-    # return ''.join(format(ord(i), '08b') for i in string)
-    data_a2b = binascii.a2b_uu(string)
-    return data_a2b
+def StringToBin(string):
+    return ''.join(format(ord(i), '08b') for i in string)
 
-
-def BinaryToDecimal(binary):
+def binaryToChar(bin_str):
+    binary = int(bin_str)
     decimal, i, n = 0, 0, 0
     while binary != 0:
         dec = binary % 10
         decimal = decimal + dec * pow(2, i)
         binary = binary // 10
         i += 1
-    return decimal
+    return chr(decimal)
 
-
-def binarytoChar(bin_data):
-    # str_data =' '
-    # # slicing the input and converting it
-    # # in decimal and then converting it in string
-    # for i in range(0, len(bin_data), 7):
-    # 	temp_data = int(bin_data[i:i + 7])
-    # 	decimal_data = BinaryToDecimal(temp_data)
-    # 	str_data = str_data + chr(decimal_data)
-    # return str_data
-    data_b2a = binascii.b2a_uu(bin_data)
-    return data_b2a
+def binToString(str):
+    tmp_str = ""
+    charSize = 8  # the size of one character in ones and zeroes
+    for i in range(int(len(str)/charSize)):
+        tmp_str += binaryToChar(str[i*charSize:i*charSize+charSize])
+    return tmp_str
 
 
 class FileManager:
@@ -156,48 +148,62 @@ class FileManager:
             return 0
 
 
-file1 = FileManager(page_size, rec_size)
-testtext = "test.txt"
+# file1 = FileManager(page_size, rec_size)
+# testtext = "test.txt"
+#
+# # test the functions.
+# file1.createFile(testtext)
+# file1.openFile(testtext)
+#
+# file1.fileBuffer = "AZTE,"
+# file1.writeNextBlock()
+# file1.fileBuffer = "KARM,"
+# file1.writeNextBlock()
+# file1.fileBuffer = "PENC,"
+# file1.writeNextBlock()
+#
+# file1.readNextBlock()
+# print(file1.fileBuffer)
+#
+# file1.readBlock(5)
+# print(file1.fileBuffer)
+#
+# file1.readBlock(10)
+# print(file1.fileBuffer)
+#
+# file1.readNextBlock()
+# print(file1.fileBuffer)
+#
+# file1.fileBuffer = "TEST,"
+# file1.writeBlock(10)
+#
+# print(file1.diskUsage())
+#
+# file1.fileBuffer = "1111,"
+# file1.appendBlock()
+#
+# file1.fileBuffer = "2222,"
+# file1.appendBlock()
+#
+# file1.deleteBlock(5)
+# # file1.fileBuffer = "STAR,"
+# # file1.writeBlock(0)
+#
+# file1.closeFile()
 
-# test the functions.
-file1.createFile(testtext)
-file1.openFile(testtext)
+## all the above functions are working properly.
 
-file1.fileBuffer = "AZTE,"
-file1.writeNextBlock()
-file1.fileBuffer = "KARM,"
-file1.writeNextBlock()
-file1.fileBuffer = "PENC,"
-file1.writeNextBlock()
-
-file1.readNextBlock()
-print(file1.fileBuffer)
-
-file1.readBlock(5)
-print(file1.fileBuffer)
-
-file1.readBlock(10)
-print(file1.fileBuffer)
-
-file1.readNextBlock()
-print(file1.fileBuffer)
-
-file1.fileBuffer = "TEST,"
-file1.writeBlock(10)
-
-print(file1.diskUsage())
-
-file1.fileBuffer = "1111,"
-file1.appendBlock()
-
-file1.fileBuffer = "2222,"
-file1.appendBlock()
-
-file1.deleteBlock(5)
-# file1.fileBuffer = "STAR,"
-# file1.writeBlock(0)
-
-file1.closeFile()
-
-
-# all the above functions are working properly.
+# test = "a"
+# print(StringToBin(test))
+# test = "b"
+# print(StringToBin(test))
+# test = "c"
+# print(StringToBin(test))
+# 
+# teststring = "a"
+# print("Normal ASCII : " + teststring)
+# 
+# binary_string = StringToBin(teststring)
+# print("Binary format: " + binary_string)
+# 
+# print("Back to ASCII: " + binToString(binary_string))
