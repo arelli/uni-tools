@@ -1,17 +1,19 @@
 import os
 from os import path
-import binascii
+import random
 
 rec_size = 32  # A record is 32 bytes long. 4 for the key and 28 for the data.
 
-# how many bytes a page has.
-page_size = 5
+page_size = 128  # how many bytes a page has.
 
-file_pointer = 0
-
+def formatBinString(string, number_of_bits):  # adds the zeroes needed in the front of the string
+    while len(string)<number_of_bits:
+        string  = "0" + string
+    return string
 
 def StringToBin(string):
     return ''.join(format(ord(i), '08b') for i in string)
+
 
 def binaryToChar(bin_str):
     binary = int(bin_str)
@@ -23,6 +25,7 @@ def binaryToChar(bin_str):
         i += 1
     return chr(decimal)
 
+
 def binToString(str):
     tmp_str = ""
     charSize = 8  # the size of one character in ones and zeroes
@@ -31,10 +34,19 @@ def binToString(str):
     return tmp_str
 
 
+def decToBin(number, bits):  # RETURNS STRING of CHARS
+    temp = int(bin(number), 2)
+    return formatBinString(str("{0:b}".format(temp)), bits)
+
+
+def binToDec(number):  # RETURNS INT!
+    return int(decToBin(number), 2)
+
+
 class FileManager:
     def __init__(self, pagesize, recsize):
-        self.page_size = pagesize
-        self.rec_size = recsize
+        self.page_size = pagesize*8 # 8 bits per byte
+        self.rec_size = recsize*8
         self.fileBuffer = ""  # size of the buffer must always be page_size(128 here)
         self.read_pos = 0  # the position in the file
         self.write_pos = 0  # 1 marks the beginning of the file
@@ -67,16 +79,15 @@ class FileManager:
         self.file = open(filename, "w+")
         data = self.file.read()
         characters = len(data)
-        numberOfPages = characters / page_size
-        self.numberOfPages = numberOfPages
-        return numberOfPages  # return how many pages the file has.
+        self.numberOfPages = characters / self.page_size
+        return self.numberOfPages  # return how many pages the file has.
 
     # Read a page(4*rec_size of bytes) of data from file, from the pos position.
     def readBlock(self, pos):
         try:
             self.file.seek(pos, 0)  # go to the location of the file pointer(pos) to start reading
             self.fileBuffer = ""
-            self.fileBuffer = self.file.read(page_size)  # read page_size bytes from file and append it to buffer
+            self.fileBuffer = self.file.read(self.page_size)  # read page_size bytes from file and append it to buffer
             self.count()
             return 1
         except Exception:
@@ -89,7 +100,7 @@ class FileManager:
             self.file.seek(self.read_pos, 0)  # go to the location of the file pointer(pos) to start reading
             self.fileBuffer = ""
             self.fileBuffer = self.file.read(self.page_size)  # read from the file and append it to the buffer
-            self.read_pos += page_size
+            self.read_pos += self.page_size
             self.count()
             return 1
         except Exception:
@@ -97,23 +108,25 @@ class FileManager:
             return 0
 
     def writeBlock(self, pos):
-        try:
-            self.file.seek(pos, 0)  # go to the location of the file pointer(pos) to start reading
-            self.file.write(self.fileBuffer)
-            if pos == page_size*self.numberOfPages:  # like an append
-                self.numberOfPages += 1
-            self.count()
-            return 1
-        except Exception:
-            print('Could not write block with writeBlock(). Exiting...')
-            return 0
+        # try:
+        self.file.seek(pos, 0)  # go to the location of the file pointer(pos) to start reading
+        self.file.write(self.fileBuffer)
+        self.write_pos += len(self.fileBuffer)
+        if pos == self.page_size*self.numberOfPages:  # like an append
+            self.numberOfPages += 1
+        self.count()
+        return 1
+        # except Exception:
+        #     print('Could not write block with writeBlock(). Exiting...')
+        #     return 0
 
     def writeNextBlock(self):
         try:
             self.file.seek(self.write_pos, 0)  # go to the location of the file pointer(pos) to start reading
             self.file.read()
             self.file.write(str(self.fileBuffer))
-            self.write_pos += page_size
+            self.write_pos += len(self.fileBuffer)
+            self.write_pos += self.page_size
             self.numberOfPages += 1
             self.count()
             return 1
@@ -123,20 +136,24 @@ class FileManager:
 
     def appendBlock(self):
         try:
-            self.writeBlock(self.numberOfPages*page_size)
+            # self.writeBlock(int(self.numberOfPages)*self.page_size)  # this should be faster, but does not work.
+            # temp_file = open(self.filename,"r")
+            # lastchar = len(temp_file.read())  # find the length of the file
+            self.writeBlock(self.write_pos)
+            return 1
         except Exception:
-            print('Could not write block with appendtBlock(). Exiting...')
+            print('Could not write block with appendBlock(). Exiting...')
             return 0
 
     def deleteBlock(self, position):  # position of the first character of the block we wanna delete
-        # read last page of the file on the main memory(seems ok!)
+        # read last page of the file on the main memory
         self.readBlock(self.numberOfPages*self.page_size-self.page_size)
-        # write it on the location of the deleted block (wtf u not workin)
+        # write it on the location of the deleted block
         self.writeBlock(position)
-        #delete the last page(seems ok for now)
+        # delete the last page
         self.file.seek(self.numberOfPages*self.page_size-self.page_size)
         self.file.truncate()
-        # decrement the numberOfPages counter(certainly ok)
+        # decrement the numberOfPages counter
         self.numberOfPages -= 1
 
     def closeFile(self):
@@ -148,62 +165,45 @@ class FileManager:
             return 0
 
 
-# file1 = FileManager(page_size, rec_size)
-# testtext = "test.txt"
-#
-# # test the functions.
-# file1.createFile(testtext)
-# file1.openFile(testtext)
-#
-# file1.fileBuffer = "AZTE,"
-# file1.writeNextBlock()
-# file1.fileBuffer = "KARM,"
-# file1.writeNextBlock()
-# file1.fileBuffer = "PENC,"
-# file1.writeNextBlock()
-#
-# file1.readNextBlock()
-# print(file1.fileBuffer)
-#
-# file1.readBlock(5)
-# print(file1.fileBuffer)
-#
-# file1.readBlock(10)
-# print(file1.fileBuffer)
-#
-# file1.readNextBlock()
-# print(file1.fileBuffer)
-#
-# file1.fileBuffer = "TEST,"
-# file1.writeBlock(10)
-#
-# print(file1.diskUsage())
-#
-# file1.fileBuffer = "1111,"
-# file1.appendBlock()
-#
-# file1.fileBuffer = "2222,"
-# file1.appendBlock()
-#
-# file1.deleteBlock(5)
-# # file1.fileBuffer = "STAR,"
-# # file1.writeBlock(0)
-#
-# file1.closeFile()
+# First Type of File organisation
+# record format:
+# ______________________________________________________
+# | key  |              data      (28 bytes)           |  x4 in each Page
+# ------------------------------------------------------
 
-## all the above functions are working properly.
+# Example Data File Generation
+file1 = FileManager(page_size, rec_size)
+file1.createFile("a_way.txt")
+file1.openFile("a_way.txt")
 
-# test = "a"
-# print(StringToBin(test))
-# test = "b"
-# print(StringToBin(test))
-# test = "c"
-# print(StringToBin(test))
-# 
-# teststring = "a"
-# print("Normal ASCII : " + teststring)
-# 
-# binary_string = StringToBin(teststring)
-# print("Binary format: " + binary_string)
-# 
-# print("Back to ASCII: " + binToString(binary_string))
+data = ""
+numbers = random.sample(range(10**11), 10000)
+for i in range(len(numbers)):
+    data = data + decToBin(i, 4*8) + decToBin(numbers[i], 28*8)
+    # the second argument is to tell the function how many zeroes to add to the final
+    # string to comply with thea above specifications.
+    if i % 4 == 0:  # each page has 4 records. We write the buffer when it reaches the one page.
+        file1.fileBuffer = data
+        file1.appendBlock()
+        data = ""
+        file1.count()
+
+# file1.fileBuffer = data
+# file1.writeBlock(0)
+
+print("FILE ACCESS COUNTER: " + str(file1.diskUsage()))
+
+
+
+# Second Type of File organisation
+# record format:
+# ______________________________________________________
+# | key  |              data      (28 bytes)           |  x4 in each Page
+# ------------------------------------------------------
+# | 0101 |       1001110101101101101011101011          |  (example)
+# ------------------------------------------------------
+#
+# Key file(consisting of key-index pairs):
+# ------------------------------------------------------
+# |pair|pair|pair|pair|pair|pair|pair|pair|...x16      |
+# ------------------------------------------------------
