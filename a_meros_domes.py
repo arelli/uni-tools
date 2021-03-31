@@ -12,11 +12,11 @@ global file_pointer
 file_pointer = 0
 
 
+
 def charToBinary(string):
     # return ''.join(format(ord(i), '08b') for i in string)
     data_a2b = binascii.a2b_uu(string)
     return data_a2b
-
 
 def BinaryToDecimal(binary):
     binary1 = binary
@@ -27,7 +27,6 @@ def BinaryToDecimal(binary):
         binary = binary // 10
         i += 1
     return (decimal)
-
 
 def binarytoChar(bin_data):
     # str_data =' '
@@ -51,6 +50,13 @@ class FileManager:
         self.write_pos = 0  # 1 marks the beginning of the file
         self.numberOfPages = 0
         self.filename = ""
+        self.disk_access_counter = 0
+
+    def count(self):
+        self.disk_access_counter += 1
+
+    def diskUsage(self):
+        return self.disk_access_counter
 
     def createFile(self,filename):
         # check if file with name filename exists in the same directory. If not, it creates it.
@@ -69,7 +75,7 @@ class FileManager:
     def openFile(self,filename):
         # return the number of pages of the file
         self.filename = filename
-        self.file = open(filename, "a+")
+        self.file = open(filename, "w+")
         data = self.file.read()
         characters = len(data)
         numberOfPages = characters / page_size
@@ -82,6 +88,7 @@ class FileManager:
             self.file.seek(pos, 0)  # go to the location of the file pointer(pos) to start reading
             self.fileBuffer = []
             self.fileBuffer.append(self.file.read(page_size))  # read page_size bytes of characters from the file and append it to the buffer
+            self.count()
             return 1
         except:
             print('Could not read block with readBlock(). Exiting...')
@@ -92,8 +99,9 @@ class FileManager:
         try:
             self.file.seek(self.read_pos, 0)  # go to the location of the file pointer(pos) to start reading
             self.fileBuffer = []
-            self.fileBuffer.append(self.file.read(page_size))  # read page_size bytes of characters from the file and append it to the buffer
+            self.fileBuffer.append(self.file.read(page_size))  # read from the file and append it to the buffer
             self.read_pos += page_size
+            self.count()
             return 1
         except:
             print('Could not read block with readNextBlock(). Exiting...')
@@ -102,8 +110,9 @@ class FileManager:
     def writeBlock(self,pos):
         try:
             self.file.seek(pos, 0)  # go to the location of the file pointer(pos) to start reading
-            self.file.write(self.fileBuffer)  # read page_size bytes of characters from the file and append it to the buffer
+            self.file.write(self.fileBuffer)
             self.numberOfPages += 1
+            self.count()
             return 1
         except:
             print('Could not write block with writeBlock(). Exiting...')
@@ -111,10 +120,12 @@ class FileManager:
 
     def writeNextBlock(self):
         try:
-            self.file.seek(1, 0)  # go to the location of the file pointer(pos) to start reading
-            self.file.write(self.fileBuffer)  # read page_size bytes of characters from the file and append it to the buffer
+            self.file.seek(self.write_pos, 0)  # go to the location of the file pointer(pos) to start reading
+            self.file.read()
+            self.file.write(self.fileBuffer)
             self.write_pos += page_size
             self.numberOfPages += 1
+            self.count()
             return 1
         except:
             print('Could not write block with writeNextBlock(). Exiting...')
@@ -126,9 +137,9 @@ class FileManager:
             self.file.close()
             self.file = open("self.filename")
             self.file.seek(len(data), 0)  # can be donw by opening the file with "a" mode
-            self.file.write(
-                self.fileBuffer)  # read page_size bytes of characters from the file and append it to the buffer
+            self.file.write(self.fileBuffer)  # read  from the file and append it to the buffer
             self.numberOfPages += 1
+            self.count()
             return 1
         except:
             print('Could not write block with appendtBlock(). Exiting...')
@@ -171,5 +182,11 @@ print(file1.fileBuffer)
 
 file1.readNextBlock()
 print(file1.fileBuffer)
+
+file1.fileBuffer = "tEsT"
+file1.writeBlock(3)
+
+print(file1.diskUsage())
+
 
 # all the above functions are working properly.
