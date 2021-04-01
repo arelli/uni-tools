@@ -33,14 +33,14 @@ def binToString(str):
         tmp_str += binaryToChar(str[i*charSize:i*charSize+charSize])
     return tmp_str
 
-
-def decToBin(number, bits):  # RETURNS STRING of CHARS
+# takes an INT and outputs a STRING. Bits define the leading zeroes
+def decToBin(number, bits):
     temp = int(bin(number), 2)
     return formatBinString(str("{0:b}".format(temp)), bits)
 
 
-def binToDec(number,bits):  # RETURNS INT!
-    return int(decToBin(number, bits), 2)
+def binToDec(number):  # RETURNS INT!
+    return int(number, 2)
 
 
 class FileManager:
@@ -165,13 +165,9 @@ class FileManager:
             return 0
 
 
-# Searches:
-
 def serialSearch(fileName,key):
     tempFile = FileManager(page_size,rec_size)
-    tempFile.createFile(fileName)
     tempFile.openFile(fileName)
-    position = 0
     tmpKey = tempFile.readBlock(0)  # read the first block
     while tmpKey != decToBin(key,4*8):
         success = tempFile.readNextBlock()
@@ -179,6 +175,7 @@ def serialSearch(fileName,key):
         if success == 0 :
             return "ERROR NOT FOUND or CANT READ"
     return tempFile.diskUsage()
+
 
 # First Type of File organisation
 # record format:
@@ -192,23 +189,21 @@ file1.createFile("a_way.txt")
 file1.openFile("a_way.txt")
 
 dataA = ""
-numbers = random.sample(range(10**11), 10000)
+numbers = random.sample(range(10**6), 100000)
 for i in range(len(numbers)):
     dataA = dataA + decToBin(i, 4*8) + decToBin(numbers[i], 28*8)
     # the second argument is to tell the function how many zeroes to add to the final
     # string to comply with thea above specifications.
-    if i % 4 == 0 and i != 0:  # each page has 4 records. We write the buffer when it reaches the one page.
-        file1.fileBuffer = dataA + "$"
+    if i % 4 == 0:  # each page has 4 records. We write the buffer when it reaches the one page.
+        file1.fileBuffer = dataA
         file1.appendBlock()
         dataA = ""
         file1.count()
 
-file1.closeFile()
-
 dataASearch = [random.choice(dataA) for i in range(10) ]  # the data we will search for
 dataA = []  # free the space of the huge list
 
-
+file1.closeFile()
 
 # Second Type of File organisation
 # record format:
@@ -232,7 +227,7 @@ file3.openFile("b_way_keys.txt")
 
 dataB = ""
 keys = ""
-numbers = random.sample(range(10**11), 10000)
+numbers = random.sample(range(10**6), 100000)
 for i in range(len(numbers)):
     dataB = dataB + decToBin(i, 4*8) + decToBin(numbers[i], 28*8)
     keys = keys + decToBin(i,4*8) + decToBin(int(i/4),4*8)
@@ -246,12 +241,11 @@ for i in range(len(numbers)):
         file3.appendBlock()
         file3.count()
         keys = ""
+dataBSearch = [random.choice(dataB) for i in range(10) ]  # the data we will search for
+dataB = []  # free the space of the huge list
 
 file2.closeFile()
 file3.closeFile()
-
-dataBSearch = [random.choice(dataB) for i in range(10) ]  # the data we will search for
-dataB = []  # free the space of the huge list
 
 print("FILE1 ACCESS COUNTER: " + str(file1.diskUsage()))
 print("FILE1 write pos: " + str(file1.write_pos))
@@ -260,12 +254,9 @@ print("FILE2 write pos: " + str(file2.write_pos))
 print("FILE3 ACCESS COUNTER: " + str(file3.diskUsage()))
 print("FILE3 write pos: " + str(file3.write_pos))
 
+# Searches:
+#serialSearch("a_way.txt",int(dataASearch[3]))
 
+print(decToBin(8,5))
 
-
-serialSearch("a_way.txt",dataASearch[3])
-
-
-
-
-
+print(binToDec("01000"))
