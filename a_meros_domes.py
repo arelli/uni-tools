@@ -74,9 +74,9 @@ class FileManager:
             print("cannot create file. Aborting")
             return 0
 
-    def openFile(self, filename):
+    def openFile(self, filename, mode):
         # return the number of pages of the file
-        self.file = open(filename, "w+")
+        self.file = open(filename, mode)
         data = self.file.read()
         characters = len(data)
         self.numberOfPages = characters / self.page_size
@@ -136,9 +136,6 @@ class FileManager:
 
     def appendBlock(self):
         try:
-            # self.writeBlock(int(self.numberOfPages)*self.page_size)  # this should be faster, but does not work.
-            # temp_file = open(self.filename,"r")
-            # lastchar = len(temp_file.read())  # find the length of the file
             self.writeBlock(self.write_pos)
             return 1
         except Exception:
@@ -164,16 +161,35 @@ class FileManager:
             print("closeFile() could not close the file.")
             return 0
 
-
+# key is a decimal integer we look for
 def serialSearch(fileName,key):
+    print("Began Serial Search")
+    notFound = True
     tempFile = FileManager(page_size,rec_size)
-    tempFile.openFile(fileName)
-    tmpKey = tempFile.readBlock(0)  # read the first block
-    while tmpKey != decToBin(key,4*8):
-        success = tempFile.readNextBlock()
-        tmpKey = binToDec(tempFile.fileBuffer[0:32])  # read the first key
-        if success == 0 :
-            return "ERROR NOT FOUND or CANT READ"
+    tempFile.openFile(fileName,"r")  # open in read mode and not write mode, to avoid truncating the file!
+    tempFile.readBlock(page_size)  # read the first block
+    tmpKey = tempFile.fileBuffer[0:32]  # tmpKey is a string!
+    if tmpKey != decToBin(key,32):
+        while notFound:
+            for i in range(4):  # search in a page
+                tmpKey = tempFile.fileBuffer[0:32]
+                tempFile.fileBuffer = tempFile.fileBuffer[256:]
+                if tmpKey == decToBin(key, 32):
+                    notFound = False
+                    print("Key found in position " + tmpKey)
+                    return 1
+            if tempFile.readNextBlock() == 0:
+                print("key not found")
+                return 0
+    else:
+        print("Key found in position " + tmpKey)
+        return 1
+
+
+
+
+
+
     return tempFile.diskUsage()
 
 
@@ -186,7 +202,7 @@ def serialSearch(fileName,key):
 # Example Data File Generation
 file1 = FileManager(page_size, rec_size)
 file1.createFile("a_way.txt")
-file1.openFile("a_way.txt")
+file1.openFile("a_way.txt","w+")
 
 dataA = ""
 numbers = random.sample(range(10**6), 100000)
@@ -202,7 +218,6 @@ for i in range(len(numbers)):
 
 dataASearch = [random.choice(dataA) for i in range(10) ]  # the data we will search for
 dataA = []  # free the space of the huge list
-
 file1.closeFile()
 
 # Second Type of File organisation
@@ -220,10 +235,10 @@ file1.closeFile()
 
 file2 = FileManager(page_size, rec_size)
 file2.createFile("b_way.txt")
-file2.openFile("b_way.txt")
+file2.openFile("b_way.txt","w+")
 file3 = FileManager(4*8, 4*8)
 file3.createFile("b_way_keys.txt")
-file3.openFile("b_way_keys.txt")
+file3.openFile("b_way_keys.txt","w+")
 
 dataB = ""
 keys = ""
@@ -237,7 +252,7 @@ for i in range(len(numbers)):
         dataB = ""
         file2.count()
     if i%16 == 0 and i != 0:
-        file3.fileBuffer = keys + "$"+str(i) + "$"
+        file3.fileBuffer = keys + "$"+str(i)
         file3.appendBlock()
         file3.count()
         keys = ""
@@ -255,8 +270,4 @@ print("FILE3 ACCESS COUNTER: " + str(file3.diskUsage()))
 print("FILE3 write pos: " + str(file3.write_pos))
 
 # Searches:
-#serialSearch("a_way.txt",int(dataASearch[3]))
-
-print(decToBin(8,5))
-
-print(binToDec("01000"))
+serialSearch("a_way.txt",104)
