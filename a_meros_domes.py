@@ -176,19 +176,20 @@ file1 = FileManager(page_size, rec_size)
 file1.createFile("a_way.txt")
 file1.openFile("a_way.txt")
 
-data = ""
+dataA = ""
 numbers = random.sample(range(10**11), 10000)
 for i in range(len(numbers)):
-    data = data + decToBin(i, 4*8) + decToBin(numbers[i], 28*8)
+    dataA = dataA + decToBin(i, 4*8) + decToBin(numbers[i], 28*8)
     # the second argument is to tell the function how many zeroes to add to the final
     # string to comply with thea above specifications.
-    if i % 4 == 0:  # each page has 4 records. We write the buffer when it reaches the one page.
-        file1.fileBuffer = data
+    if i % 4 == 0 and i != 0:  # each page has 4 records. We write the buffer when it reaches the one page.
+        file1.fileBuffer = dataA + "$"
         file1.appendBlock()
-        data = ""
+        dataA = ""
         file1.count()
 
-print("FILE ACCESS COUNTER: " + str(file1.diskUsage()))
+dataASearch = [random.choice(dataA) for i in range(10) ]  # the data we will search for
+dataA = []  # free the space of the huge list
 
 
 
@@ -204,3 +205,39 @@ print("FILE ACCESS COUNTER: " + str(file1.diskUsage()))
 # ------------------------------------------------------
 # |pair|pair|pair|pair|pair|pair|pair|pair|...x16      |
 # ------------------------------------------------------
+
+file2 = FileManager(page_size, rec_size)
+file2.createFile("b_way.txt")
+file2.openFile("b_way.txt")
+file3 = FileManager(4*8, 4*8)
+file3.createFile("b_way_keys.txt")
+file3.openFile("b_way_keys.txt")
+
+dataB = ""
+keys = ""
+numbers = random.sample(range(10**11), 10000)
+for i in range(len(numbers)):
+    dataB = dataB + decToBin(i, 4*8) + decToBin(numbers[i], 28*8)
+    keys = keys + decToBin(i,4*8) + decToBin(int(i/4),4*8)
+    if i % 4 == 0 and i != 0:
+        file2.fileBuffer = dataB
+        file2.appendBlock()
+        dataB = ""
+        file2.count()
+    if i%16 == 0 and i != 0:
+        file3.fileBuffer = keys + "$"+str(i) + "$"
+        file3.appendBlock()
+        file3.count()
+        keys = ""
+dataBSearch = [random.choice(dataB) for i in range(10) ]  # the data we will search for
+dataB = []  # free the space of the huge list
+
+print("FILE1 ACCESS COUNTER: " + str(file1.diskUsage()))
+print("FILE1 write pos: " + str(file1.write_pos))
+print("FILE2 ACCESS COUNTER: " + str(file2.diskUsage()))
+print("FILE2 write pos: " + str(file2.write_pos))
+print("FILE3 ACCESS COUNTER: " + str(file3.diskUsage()))
+print("FILE3 write pos: " + str(file3.write_pos))
+
+# Searches:
+
