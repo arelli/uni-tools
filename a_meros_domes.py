@@ -39,8 +39,8 @@ def decToBin(number, bits):  # RETURNS STRING of CHARS
     return formatBinString(str("{0:b}".format(temp)), bits)
 
 
-def binToDec(number):  # RETURNS INT!
-    return int(decToBin(number), 2)
+def binToDec(number,bits):  # RETURNS INT!
+    return int(decToBin(number, bits), 2)
 
 
 class FileManager:
@@ -165,6 +165,21 @@ class FileManager:
             return 0
 
 
+# Searches:
+
+def serialSearch(fileName,key):
+    tempFile = FileManager(page_size,rec_size)
+    tempFile.createFile(fileName)
+    tempFile.openFile(fileName)
+    position = 0
+    tmpKey = tempFile.readBlock(0)  # read the first block
+    while tmpKey != decToBin(key,4*8):
+        success = tempFile.readNextBlock()
+        tmpKey = binToDec(tempFile.fileBuffer[0:32])  # read the first key
+        if success == 0 :
+            return "ERROR NOT FOUND or CANT READ"
+    return tempFile.diskUsage()
+
 # First Type of File organisation
 # record format:
 # ______________________________________________________
@@ -187,6 +202,8 @@ for i in range(len(numbers)):
         file1.appendBlock()
         dataA = ""
         file1.count()
+
+file1.closeFile()
 
 dataASearch = [random.choice(dataA) for i in range(10) ]  # the data we will search for
 dataA = []  # free the space of the huge list
@@ -229,6 +246,10 @@ for i in range(len(numbers)):
         file3.appendBlock()
         file3.count()
         keys = ""
+
+file2.closeFile()
+file3.closeFile()
+
 dataBSearch = [random.choice(dataB) for i in range(10) ]  # the data we will search for
 dataB = []  # free the space of the huge list
 
@@ -239,5 +260,12 @@ print("FILE2 write pos: " + str(file2.write_pos))
 print("FILE3 ACCESS COUNTER: " + str(file3.diskUsage()))
 print("FILE3 write pos: " + str(file3.write_pos))
 
-# Searches:
+
+
+
+serialSearch("a_way.txt",dataASearch[3])
+
+
+
+
 
