@@ -153,6 +153,7 @@ def serialSearch(fileName,key):
     tmpKey = tempFile.fileBuffer[0:32]  # tmpKey is a string!
     if tmpKey != decToBin(key,32):
         while notFound:
+            page_number += 1
             for i in range(4):  # search in a page
                 record_number +=1
                 tmpKey = tempFile.fileBuffer[0:32]
@@ -162,7 +163,6 @@ def serialSearch(fileName,key):
                     print("Key found in position " + tmpKey + ", at page No " + str(page_number) + ", rec " + str(record_number))
                     return tempFile.diskUsage()
             record_number = 0
-            page_number += 1
             if tempFile.readNextBlock() == 0:
                 print("key not found")
                 return 0
@@ -171,27 +171,27 @@ def serialSearch(fileName,key):
         return tempFile.diskUsage()
 
 def serialSearchKey(fileName,key):   # dataFileName,
-    print("Began Serial KeyFile Search")
+    print("Began Serial key Search")
     page_number = 0
     record_number = 0
     notFound = True
     tempFile = FileManager(page_size, rec_size)
     tempFile.openFile(fileName, "r")  # open in read mode and not write mode, to avoid truncating the file!
     tempFile.readBlock(0)  # read the first block
-    tmpKey = tempFile.fileBuffer[32:2*32]  # tmpKey is a string!
+    tmpKey = tempFile.fileBuffer[32:64]  # tmpKey is a string!
     if tmpKey != decToBin(key, 32):
         while notFound:
+            page_number += 1
             for i in range(16):  # search in a page
                 record_number += 1
-                tmpKey = tempFile.fileBuffer[32:2*32]
-                tempFile.fileBuffer = tempFile.fileBuffer[2*32:]
+                tmpKey = tempFile.fileBuffer[32:64]
+                tempFile.fileBuffer = tempFile.fileBuffer[64:]
                 if tmpKey == decToBin(key, 32):
                     notFound = False
                     print("Key found in position " + tmpKey + ", at page No " + str(page_number) + ", rec " + str(
                         record_number))
                     return tempFile.diskUsage()
             record_number = 0
-            page_number += 1
             if tempFile.readNextBlock() == 0:
                 print("key not found")
                 return 0
@@ -200,35 +200,6 @@ def serialSearchKey(fileName,key):   # dataFileName,
         return tempFile.diskUsage()
 
 
-    # print("Began  KeyFile Serial Search")
-    # page_number = 0
-    # record_number = 0
-    # keyBitSize = 32
-    # notFound = True
-    # tempFileKeys = FileManager(page_size,rec_size)
-    # tempFileKeys.openFile(keysFileName,"r")  # open in read mode and not write mode, to avoid truncating the file!
-    # tempFileKeys.readBlock(page_size)  # read the first block
-    # # tmpKey = tempFileKeys.fileBuffer[keyBitSize:keyBitSize*2]  # tmpKey is a string!
-    # # tempFileKeys.fileBuffer = tempFileKeys.fileBuffer[keyBitSize*2:]
-    # tmpKey = ''
-    # if tmpKey != decToBin(key,keyBitSize):
-    #     while notFound:
-    #         for i in range(int((page_size*8)/keyBitSize)):  # search in a page
-    #             record_number +=1
-    #             tmpKey = tempFileKeys.fileBuffer[keyBitSize:2*keyBitSize]  # the key is the second stored value, [32:64]
-    #             tempFileKeys.fileBuffer = tempFileKeys.fileBuffer[2*keyBitSize:]
-    #             if tmpKey == decToBin(key, keyBitSize):
-    #                 notFound = False
-    #                 print("Key found in position " + tmpKey + ", at page No " + str(page_number) + ", rec " + str(record_number))
-    #                 return tempFileKeys.diskUsage()
-    #         record_number = 0
-    #         page_number += 1
-    #         if tempFileKeys.readNextBlock() == 0:
-    #             print("key not found")
-    #             return 0
-    # else:
-    #     print("Key found in position " + tmpKey)
-    #     return tempFileKeys.diskUsage()
 
 
 # Example Data File Generation
@@ -252,14 +223,46 @@ def createSerialFile():
 
     file1.closeFile()
 
-# createSerialFile()
+def createSerialKeyFile():
+    file1 = FileManager(page_size, rec_size)
+    file1.createFile("b_way_keys.txt")
+    file1.openFile("b_way_keys.txt","w+")
+    keys_number = 1000  # how many entries the file has.
+    dataA = ""
+    numbers = random.sample(range(10**6), keys_number)
+    keys_list = random.sample(range(keys_number), keys_number)  #  [i for i in range(keys_number)]
+    for i in range(len(numbers)):
+        dataA = dataA + decToBin(keys_list[i], 4*8) + decToBin(int(i/16), 4*8)
+        # the second argument is to tell the function how many zeroes to add to the final
+        # string to comply with thea above specifications.
+        if i % 16 == 0 and i != 0:  # each page has 4 records. We write the buffer when it reaches the one page.
+            file1.fileBuffer = dataA
+            file1.appendBlock()
+            dataA = ""
+            file1.count()
 
-keys_list = random.sample(range(1000), 20)  # 20 is the number of calculations
+    file1.closeFile()
+
+createSerialFile()
+createSerialKeyFile()
+
+keys_list = random.sample(range(1000), 1000)  # 20 is the number of calculations
 simpleSerial = [0 for i in range(20)]
 keyFileSerial = [0 for i in range(20)]
 for i in range(20):
     simpleSerial[i] = int(serialSearch("a_way.txt",keys_list[i]))
 
-serialSearchKey("b_way_keys.txt", keys_list[10])
+counter = 0
+index = 0
+while counter < 20:
+    keyFileSerial[counter] = int(serialSearchKey("b_way_keys.txt",keys_list[index]))
+    if keyFileSerial[counter] == 0:
+        index += 1
+    else:
+        index += 1
+        counter += 1
+
+
+
 print("The first way's performance is : " + str(sum(simpleSerial)/len(simpleSerial)))
 print("The second way's performance is : " + str(sum(keyFileSerial)/len(keyFileSerial)))
