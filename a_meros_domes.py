@@ -42,11 +42,9 @@ class FileManager:
         # check if file with name filename exists in the same directory. If not, it creates it.
         self.filename = filename
         if path.exists(filename):
-            print("file exists!")
             os.remove(filename)
         try:
             open(filename, "x")  # create the file
-            print("new file " + str(filename) + " created.")
             return 1
         except Exception:
             print("cannot create file. Aborting")
@@ -198,7 +196,7 @@ def createSerialFile():
     file1 = FileManager(page_size, rec_size)
     file1.createFile("a_way.txt")
     file1.openFile("a_way.txt","w+")
-    keys_number = 1000  # how many entries the file has.
+    keys_number = 100000  # how many entries the file has.
     dataA = ""
     numbers = random.sample(range(10**6), keys_number)
     keys_list = random.sample(range(keys_number), keys_number)
@@ -211,17 +209,17 @@ def createSerialFile():
             file1.appendBlock()
             dataA = ""
             file1.count()
-
+    createSerialFileSorted(keys_list)
     file1.closeFile()
 
-def createSerialFileSorted():
+def createSerialFileSorted(list):
     file1 = FileManager(page_size, rec_size)
     file1.createFile("a_way_sorted.txt")
     file1.openFile("a_way_sorted.txt","w+")
-    keys_number = 1000  # how many entries the file has.
+    keys_number = 100000  # how many entries the file has.
     dataA = ""
     numbers = random.sample(range(10**6), keys_number)
-    keys_list = random.sample(range(keys_number), keys_number)
+    keys_list = list
     keys_list.sort()
     for i in range(len(numbers)):
         dataA = dataA + decToBin(keys_list[i], 4*8) + decToBin(numbers[i], 28*8)
@@ -238,7 +236,7 @@ def createSerialKeyFile():
     file1 = FileManager(page_size, rec_size)
     file1.createFile("b_way_keys.txt")
     file1.openFile("b_way_keys.txt","w+")
-    keys_number = 1000  # how many entries the file has.
+    keys_number = 100000  # how many entries the file has.
     dataA = ""
     numbers = random.sample(range(10**6), keys_number)
     keys_list = random.sample(range(keys_number), keys_number)  #  [i for i in range(keys_number)]
@@ -251,17 +249,17 @@ def createSerialKeyFile():
             file1.appendBlock()
             dataA = ""
             file1.count()
-
+    createSerialKeyFileSorted(keys_list)
     file1.closeFile()
 
-def createSerialKeyFileSorted():
+def createSerialKeyFileSorted(list):
     file1 = FileManager(page_size, rec_size)
     file1.createFile("b_way_keys_sorted.txt")
     file1.openFile("b_way_keys_sorted.txt","w+")
-    keys_number = 1000  # how many entries the file has.
+    keys_number = 100000  # how many entries the file has.
     dataA = ""
     numbers = random.sample(range(10**6), keys_number)
-    keys_list = random.sample(range(keys_number), keys_number)  #  [i for i in range(keys_number)]
+    keys_list = list  #  [i for i in range(keys_number)]
     keys_list.sort()
     for i in range(len(numbers)):
         dataA = dataA + decToBin(keys_list[i], 4*8) + decToBin(int(i/16), 4*8)
@@ -274,10 +272,10 @@ def createSerialKeyFileSorted():
             file1.count()
 
     file1.closeFile()
-
+print("*********** Creating Files... ***********")
 createSerialFile()
 createSerialKeyFile()
-
+print("*********** Testing Non-Sorted Algorithms ***********")
 keys_list = random.sample(range(1000), 1000)  # 20 is the number of calculations
 simpleSerial = [0 for i in range(20)]
 keyFileSerial = [0 for i in range(20)]
@@ -301,8 +299,7 @@ print("Key serial file format average disk access per search : " + str(sum(keyFi
 
 
 
-createSerialFileSorted()
-createSerialKeyFileSorted()
+print("*********** Testing Sorted Algorithms ***********")
 
 keys_list = random.sample(range(1000), 1000)  # 20 is the number of calculations
 simpleSerial = [0 for i in range(20)]
