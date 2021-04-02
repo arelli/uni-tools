@@ -143,7 +143,6 @@ class FileManager:
 
 # key is a decimal integer we look for
 def serialSearch(fileName,key):
-    print("Began Serial Search")
     page_number = 0
     record_number = 0
     notFound = True
@@ -160,18 +159,14 @@ def serialSearch(fileName,key):
                 tempFile.fileBuffer = tempFile.fileBuffer[256:]
                 if tmpKey == decToBin(key, 32):
                     notFound = False
-                    print("Key found in position " + tmpKey + ", at page No " + str(page_number) + ", rec " + str(record_number))
                     return tempFile.diskUsage()
             record_number = 0
             if tempFile.readNextBlock() == 0:
-                print("key not found")
                 return 0
     else:
-        print("Key found in position " + tmpKey)
         return tempFile.diskUsage()
 
 def serialSearchKey(fileName,key):   # dataFileName,
-    print("Began Serial key Search")
     page_number = 0
     record_number = 0
     notFound = True
@@ -188,15 +183,11 @@ def serialSearchKey(fileName,key):   # dataFileName,
                 tempFile.fileBuffer = tempFile.fileBuffer[64:]
                 if tmpKey == decToBin(key, 32):
                     notFound = False
-                    print("Key found in position " + tmpKey + ", at page No " + str(page_number) + ", rec " + str(
-                        record_number))
                     return tempFile.diskUsage()
             record_number = 0
             if tempFile.readNextBlock() == 0:
-                print("key not found")
                 return 0
     else:
-        print("Key found in position " + tmpKey)
         return tempFile.diskUsage()
 
 
@@ -223,6 +214,26 @@ def createSerialFile():
 
     file1.closeFile()
 
+def createSerialFileSorted():
+    file1 = FileManager(page_size, rec_size)
+    file1.createFile("a_way_sorted.txt")
+    file1.openFile("a_way_sorted.txt","w+")
+    keys_number = 1000  # how many entries the file has.
+    dataA = ""
+    numbers = random.sample(range(10**6), keys_number)
+    keys_list = random.sample(range(keys_number), keys_number)
+    keys_list.sort()
+    for i in range(len(numbers)):
+        dataA = dataA + decToBin(keys_list[i], 4*8) + decToBin(numbers[i], 28*8)
+        # the second argument is to tell the function how many zeroes to add to the final
+        # string to comply with thea above specifications.
+        if i % 4 == 0:  # each page has 4 records. We write the buffer when it reaches the one page.
+            file1.fileBuffer = dataA
+            file1.appendBlock()
+            dataA = ""
+            file1.count()
+    file1.closeFile()
+
 def createSerialKeyFile():
     file1 = FileManager(page_size, rec_size)
     file1.createFile("b_way_keys.txt")
@@ -231,6 +242,27 @@ def createSerialKeyFile():
     dataA = ""
     numbers = random.sample(range(10**6), keys_number)
     keys_list = random.sample(range(keys_number), keys_number)  #  [i for i in range(keys_number)]
+    for i in range(len(numbers)):
+        dataA = dataA + decToBin(keys_list[i], 4*8) + decToBin(int(i/16), 4*8)
+        # the second argument is to tell the function how many zeroes to add to the final
+        # string to comply with thea above specifications.
+        if i % 16 == 0 and i != 0:  # each page has 4 records. We write the buffer when it reaches the one page.
+            file1.fileBuffer = dataA
+            file1.appendBlock()
+            dataA = ""
+            file1.count()
+
+    file1.closeFile()
+
+def createSerialKeyFileSorted():
+    file1 = FileManager(page_size, rec_size)
+    file1.createFile("b_way_keys_sorted.txt")
+    file1.openFile("b_way_keys_sorted.txt","w+")
+    keys_number = 1000  # how many entries the file has.
+    dataA = ""
+    numbers = random.sample(range(10**6), keys_number)
+    keys_list = random.sample(range(keys_number), keys_number)  #  [i for i in range(keys_number)]
+    keys_list.sort()
     for i in range(len(numbers)):
         dataA = dataA + decToBin(keys_list[i], 4*8) + decToBin(int(i/16), 4*8)
         # the second argument is to tell the function how many zeroes to add to the final
@@ -264,5 +296,29 @@ while counter < 20:
 
 
 
-print("The first way's performance is : " + str(sum(simpleSerial)/len(simpleSerial)))
-print("The second way's performance is : " + str(sum(keyFileSerial)/len(keyFileSerial)))
+print("Single serial file format average disk access per search : " + str(sum(simpleSerial)/len(simpleSerial)))
+print("Key serial file format average disk access per search : " + str(sum(keyFileSerial)/len(keyFileSerial)))
+
+
+
+createSerialFileSorted()
+createSerialKeyFileSorted()
+
+keys_list = random.sample(range(1000), 1000)  # 20 is the number of calculations
+simpleSerial = [0 for i in range(20)]
+keyFileSerial = [0 for i in range(20)]
+for i in range(20):
+    simpleSerial[i] = int(serialSearch("a_way_sorted.txt",keys_list[i]))
+
+counter = 0
+index = 0
+while counter < 20:
+    keyFileSerial[counter] = int(serialSearchKey("b_way_keys_sorted.txt",keys_list[index]))
+    if keyFileSerial[counter] == 0:
+        index += 1
+    else:
+        index += 1
+        counter += 1
+
+print("Single serial *sorted* file format average disk access per search : " + str(sum(simpleSerial)/len(simpleSerial)))
+print("Key serial *sorted* file format average disk access per search : " + str(sum(keyFileSerial)/len(keyFileSerial)))
