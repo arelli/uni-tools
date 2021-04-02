@@ -11,28 +11,6 @@ def formatBinString(string, number_of_bits):  # adds the zeroes needed in the fr
         string  = "0" + string
     return string
 
-def StringToBin(string):
-    return ''.join(format(ord(i), '08b') for i in string)
-
-
-def binaryToChar(bin_str):
-    binary = int(bin_str)
-    decimal, i, n = 0, 0, 0
-    while binary != 0:
-        dec = binary % 10
-        decimal = decimal + dec * pow(2, i)
-        binary = binary // 10
-        i += 1
-    return chr(decimal)
-
-
-def binToString(str):
-    tmp_str = ""
-    charSize = 8  # the size of one character in ones and zeroes
-    for i in range(int(len(str)/charSize)):
-        tmp_str += binaryToChar(str[i*charSize:i*charSize+charSize])
-    return tmp_str
-
 # takes an INT and outputs a STRING. Bits define the leading zeroes
 def decToBin(number, bits):
     temp = int(bin(number), 2)
@@ -164,6 +142,8 @@ class FileManager:
 # key is a decimal integer we look for
 def serialSearch(fileName,key):
     print("Began Serial Search")
+    page_number = 0
+    record_number = 0
     notFound = True
     tempFile = FileManager(page_size,rec_size)
     tempFile.openFile(fileName,"r")  # open in read mode and not write mode, to avoid truncating the file!
@@ -172,26 +152,83 @@ def serialSearch(fileName,key):
     if tmpKey != decToBin(key,32):
         while notFound:
             for i in range(4):  # search in a page
+                record_number +=1
                 tmpKey = tempFile.fileBuffer[0:32]
                 tempFile.fileBuffer = tempFile.fileBuffer[256:]
                 if tmpKey == decToBin(key, 32):
                     notFound = False
-                    print("Key found in position " + tmpKey)
-                    return 1
+                    print("Key found in position " + tmpKey + ", at page No " + str(page_number) + ", rec " + str(record_number))
+                    return tempFile.diskUsage()
+            record_number = 0
+            page_number += 1
             if tempFile.readNextBlock() == 0:
                 print("key not found")
                 return 0
     else:
         print("Key found in position " + tmpKey)
-        return 1
+        return tempFile.diskUsage()
 
+def serialSearchKey(keysFileName,key):   # dataFileName,
+    print("Began Serial Search")
+    page_number = 0
+    record_number = 0
+    keyBitSize = 32
+    notFound = True
+    tempFileKeys = FileManager(page_size,rec_size)
+    tempFileKeys.openFile(keysFileName,"r")  # open in read mode and not write mode, to avoid truncating the file!
+    tempFileKeys.readBlock(page_size)  # read the first block
+    tmpKey = tempFileKeys.fileBuffer[0:keyBitSize]  # tmpKey is a string!
+    if tmpKey != decToBin(key,keyBitSize):
+        while notFound:
+            for i in range(int((page_size*8)/keyBitSize)):  # search in a page
+                record_number +=1
+                tmpKey = tempFileKeys.fileBuffer[keyBitSize:2*keyBitSize]  # the key is the second stored value, [32:64]
+                tempFileKeys.fileBuffer = tempFileKeys.fileBuffer[2*keyBitSize:]
+                if tmpKey == decToBin(key, keyBitSize):
+                    # tempFileData = FileManager(page_size, rec_size)
+                    # tempFileData.openFile(dataFileName, "r")
+                    #
+                    notFound = False
 
+                    print("Key found in position " + tmpKey + ", at page No " + str(page_number) + ", rec " + str(record_number))
+                    return tempFileKeys.diskUsage()
+            record_number = 0
+            page_number += 1
+            if tempFileKeys.readNextBlock() == 0:
+                print("key not found")
+                return 0
+    else:
+        print("Key found in position " + tmpKey)
+        return tempFileKeys.diskUsage()
 
-
-
-
-    return tempFile.diskUsage()
-
+# def serialSearchKeyFile(keyFileName,dataFileName,key):
+#     notFound = True
+#     keysPerPage = 16
+#     keyBitLength = 32
+#     page_number = 0
+#     record_number = 0
+#     tempFileKeys = FileManager(page_size,rec_size)
+#     tempFileKeys.openFile(keyFileName,"r")  # open in read mode and not write mode, to avoid truncating the file!
+#     tempFileKeys.readBlock(page_size)  # read the first block
+#     tmpKey = tempFileKeys.fileBuffer[0:keyBitLength]  # tmpKey is a string!
+#     if tmpKey != decToBin(key,keyBitLength):
+#         while notFound:
+#             for i in range(keysPerPage):  # search in a page
+#                 record_number +=1
+#                 tmpKey = tempFileKeys.fileBuffer[0:keyBitLength]
+#                 tempFileKeys.fileBuffer = tempFileKeys.fileBuffer[keyBitLength:]
+#                 if tmpKey == decToBin(key, keyBitLength):
+#                     notFound = False
+#                     print("Key found in position " + tmpKey + ", at page No " + str(page_number) + ", rec " + str(record_number))
+#                     return tempFileKeys.diskUsage()
+#             record_number = 0
+#             page_number += 1
+#             if tempFileKeys.readNextBlock() == 0:
+#                 print("key not found")
+#                 return 0
+#     else:
+#         print("Key found in position " + tmpKey)
+#         return tempFileKeys.diskUsage()
 
 # First Type of File organisation
 # record format:
@@ -252,7 +289,7 @@ for i in range(len(numbers)):
         dataB = ""
         file2.count()
     if i%16 == 0 and i != 0:
-        file3.fileBuffer = keys + "$"+str(i)
+        file3.fileBuffer = keys
         file3.appendBlock()
         file3.count()
         keys = ""
@@ -262,12 +299,16 @@ dataB = []  # free the space of the huge list
 file2.closeFile()
 file3.closeFile()
 
-print("FILE1 ACCESS COUNTER: " + str(file1.diskUsage()))
-print("FILE1 write pos: " + str(file1.write_pos))
-print("FILE2 ACCESS COUNTER: " + str(file2.diskUsage()))
-print("FILE2 write pos: " + str(file2.write_pos))
-print("FILE3 ACCESS COUNTER: " + str(file3.diskUsage()))
-print("FILE3 write pos: " + str(file3.write_pos))
 
 # Searches:
-serialSearch("a_way.txt",104)
+# print("The total number of disk access(es) is: ", str(serialSearch("a_way.txt",14863)))
+print("The total number of disk access(es) is: ", str(serialSearchKey("b_way_keys.txt",1)))
+print("The total number of disk access(es) is: ", str(serialSearchKey("b_way_keys.txt",10)))
+print("The total number of disk access(es) is: ", str(serialSearchKey("b_way_keys.txt",11)))
+print("The total number of disk access(es) is: ", str(serialSearchKey("b_way_keys.txt",12)))
+print("The total number of disk access(es) is: ", str(serialSearchKey("b_way_keys.txt",13)))
+print("The total number of disk access(es) is: ", str(serialSearchKey("b_way_keys.txt",14)))
+print("The total number of disk access(es) is: ", str(serialSearchKey("b_way_keys.txt",15)))
+print("The total number of disk access(es) is: ", str(serialSearchKey("b_way_keys.txt",16)))
+print("The total number of disk access(es) is: ", str(serialSearchKey("b_way_keys.txt",17)))
+print("The total number of disk access(es) is: ", str(serialSearchKey("b_way_keys.txt",18)))
