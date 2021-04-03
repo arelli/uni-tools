@@ -211,7 +211,6 @@ def createSerialFile():
             file1.count()
     createSerialFileSorted(keys_list)
     file1.closeFile()
-    return keys_list[:]
 
 def createSerialFileSorted(list):
     file1 = FileManager(page_size, rec_size)
@@ -233,7 +232,6 @@ def createSerialFileSorted(list):
             file1.count()
     file1.closeFile()
 
-
 def createSerialKeyFile():
     file1 = FileManager(page_size, rec_size)
     file1.createFile("b_way_keys.txt")
@@ -253,7 +251,6 @@ def createSerialKeyFile():
             file1.count()
     createSerialKeyFileSorted(keys_list)
     file1.closeFile()
-    return keys_list[:]
 
 def createSerialKeyFileSorted(list):
     file1 = FileManager(page_size, rec_size)
@@ -273,14 +270,13 @@ def createSerialKeyFileSorted(list):
             file1.appendBlock()
             dataA = ""
             file1.count()
+
     file1.closeFile()
-
-
 print("*********** Creating Files... ***********")
-keys_list = createSerialFile()
-keys_list1 = createSerialKeyFile()
+createSerialFile()
+createSerialKeyFile()
 print("*********** Testing Non-Sorted Algorithms ***********")
-#keys_list = random.sample(range(10**4), 10000)  # 20 is the number of calculations
+keys_list = random.sample(range(1000), 1000)  # 20 is the number of calculations
 simpleSerial = [0 for i in range(20)]
 keyFileSerial = [0 for i in range(20)]
 for i in range(20):
@@ -289,7 +285,7 @@ for i in range(20):
 counter = 0
 index = 0
 while counter < 20:
-    keyFileSerial[counter] = int(serialSearchKey("b_way_keys.txt",keys_list1[index]))
+    keyFileSerial[counter] = int(serialSearchKey("b_way_keys.txt",keys_list[index]))
     if keyFileSerial[counter] == 0:
         index += 1
     else:
