@@ -25,6 +25,7 @@ end strange_adder;
 
 architecture Behavioral of strange_adder is
 	signal Count_temp:STD_LOGIC_VECTOR(7 DOWNTO 0);
+	signal Valid_buffer:STD_LOGIC;  -- to be able to read the output of Valid in the if statements
 	
 	begin
 		process
@@ -34,22 +35,33 @@ architecture Behavioral of strange_adder is
 					Count_temp <= "00000000";
 					Underflow <= '0';
 					Overflow <= '0';
-					Valid <= '1';
+					Valid_buffer <= '1';
 					
 				else
-					case Control is
-						when "000" => Count_temp <= Count_temp -5;
-						when "001" => Count_temp <= Count_temp -2;
-						when "010" => Count_temp <= Count_temp;
-						when "011" => Count_temp <= Count_temp +1;
-						when "100" => Count_temp <= Count_temp +2;
-						when "101" => Count_temp <= Count_temp +5;
-						when "110" => Count_temp <= Count_temp +6;
-						when "111" => Count_temp <= Count_temp +12;
-						when others => Valid <= '0';
-					end case;
+					if Valid_buffer = '1' then
+						case Control is
+							when "000" => Count_temp <= Count_temp -5;
+							when "001" => Count_temp <= Count_temp -2;
+							when "010" => Count_temp <= Count_temp;
+							when "011" => Count_temp <= Count_temp +1;
+							when "100" => Count_temp <= Count_temp +2;
+							when "101" => 
+								if Count_temp >= "11111011" then
+									Valid_buffer <= '0';
+								else
+									Count_temp <= Count_temp +5;
+								end if;
+			
+							when "110" => Count_temp <= Count_temp +6;
+							when "111" => Count_temp <= Count_temp +12;
+							when others => Valid_buffer <= '0';
+						end case;
+					else
+						Count_temp <= Count_temp;
+					end if;
 				end if;
 		end process;
 		Count <= Count_temp;
+		Valid <= Valid_buffer;
 end Behavioral;
 
