@@ -36,35 +36,17 @@ architecture Behavioral of strange_adder is
 					Overflow <= '0';
 					Valid <= '1';
 					
-				elsif
-					
 				else
 					case Control is
-						when "000" =>
-							Count_temp <= Count_temp -5;
-						when "001" =>
-							Count_temp <= Count_temp -2;
-							
-						when "010" =>
-							Count_temp <= Count_temp;
-							
-						when "011" =>
-							Count_temp <= Count_temp +1;
-							
-						when "100" =>
-							Count_temp <= Count_temp +2;
-							
-						when "101" =>
-							Count_temp <= Count_temp +5;
-							
-						when "110" =>
-							Count_temp <= Count_temp +6;
-							
-						when "111" =>
-							Count_temp <= Count_temp +12;
-						when others =>
-							Valid <= '0';
-							
+						when "000" => Count_temp <= Count_temp -5;
+						when "001" => Count_temp <= Count_temp -2;
+						when "010" => Count_temp <= Count_temp;
+						when "011" => Count_temp <= Count_temp +1;
+						when "100" => Count_temp <= Count_temp +2;
+						when "101" => Count_temp <= Count_temp +5;
+						when "110" => Count_temp <= Count_temp +6;
+						when "111" => Count_temp <= Count_temp +12;
+						when others => Valid <= '0';
 					end case;
 				end if;
 		end process;
