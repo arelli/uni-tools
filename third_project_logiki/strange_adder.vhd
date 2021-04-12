@@ -40,21 +40,66 @@ architecture Behavioral of strange_adder is
 				else
 					if Valid_buffer = '1' then
 						case Control is
-							when "000" => Count_temp <= Count_temp -5;
-							when "001" => Count_temp <= Count_temp -2;
-							when "010" => Count_temp <= Count_temp;
-							when "011" => Count_temp <= Count_temp +1;
-							when "100" => Count_temp <= Count_temp +2;
-							when "101" => 
-								if Count_temp >= "11111011" then
+							when "000" =>
+								if Count_temp <= "00000100" then
 									Valid_buffer <= '0';
+									Underflow <= '1';
+								else
+									Count_temp <= Count_temp -5;
+								end if;
+							
+							when "001" => 
+								if Count_temp <= "00000001" then
+									Valid_buffer <= '0';
+									Underflow <= '1';
+								else
+									Count_temp <= Count_temp -2;
+								end if;
+						
+							when "010" => Count_temp <= Count_temp;
+							
+							when "011" => 
+								if Count_temp >= "11111111" then
+									Valid_buffer <= '0';
+									Overflow <= '1';
+								else
+									Count_temp <= Count_temp +1;
+								end if;
+								
+							when "100" => 
+								if Count_temp >= "11111110" then
+									Valid_buffer <= '0';
+									Overflow <= '1';
+								else
+									Count_temp <= Count_temp +2;
+								end if;
+								
+							when "101" => 
+								if Count_temp >= "11111011" then  -- 255-(5-1)
+									Valid_buffer <= '0';
+									Overflow <= '1';
 								else
 									Count_temp <= Count_temp +5;
 								end if;
 			
-							when "110" => Count_temp <= Count_temp +6;
-							when "111" => Count_temp <= Count_temp +12;
-							when others => Valid_buffer <= '0';
+							when "110" => 
+								if Count_temp >= "11111010" then
+									Valid_buffer <= '0';
+									Overflow <= '1';
+								else
+									Count_temp <= Count_temp +6;
+								end if;
+								
+							when "111" => 
+								if Count_temp >= "11110011" then
+									Valid_buffer <= '0';
+									Overflow <= '1';
+								else
+									Count_temp <= Count_temp +12;
+								end if;
+								
+							when others => 
+								Valid_buffer <= '0';
 						end case;
 					else
 						Count_temp <= Count_temp;
