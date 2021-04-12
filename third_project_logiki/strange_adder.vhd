@@ -36,66 +36,36 @@ architecture Behavioral of strange_adder is
 					Overflow <= '0';
 					Valid <= '1';
 					
+				elsif
+					
 				else
-					if Control = "000" then  -- step -5
-						if Count_temp = "00000100" then
-							Underflow <= '1';
-							-- stop the counter
-						else
+					case Control is
+						when "000" =>
 							Count_temp <= Count_temp -5;
-						end if;
-						
-					elsif Control = "001" then  -- step -2
-						if Count_temp = "00000001" then
-							Underflow <= '1';
-							-- stop the counter
-						else
+						when "001" =>
 							Count_temp <= Count_temp -2;
-						end if;
-					
-					elsif Control = "010" then  -- step 0
-						Count_temp <= Count_temp;
-					
-					elsif Control = "011" then  -- step 1
-						if Count_temp = "11111111" then
-								Overflow <= '1';
-								-- stop the counter
-						else
-							Count_temp <= Count_temp + 1;
-						end if;
-					
-					elsif Control = "100" then  -- step 2
-						if Count_temp = "11111110" then
-									Overflow <= '1';
-									-- stop the counter
-						else
-							Count_temp <= Count_temp + 2;
-						end if;
-					
-					elsif Control = "101" then    -- step 5
-						if Count_temp = "11111111" then
-									Overflow <= '1';
-									-- stop the counter
-						else
-							Count_temp <= Count_temp + 5;
-						end if;
-					
-					elsif Control = "110" then  -- step 6
-						if Count_temp = "11111010" then
-									Overflow <= '1';
-									-- stop the counter
-						else
-							Count_temp <= Count_temp + 6;
-						end if;
-					
-					elsif Control = "111" then    -- step 12
-						if Count_temp = "11110100" then
-									Overflow <= '1';
-									-- stop the counter
-						else
-							Count_temp <= Count_temp + 12;
-						end if;
-					end if;
+							
+						when "010" =>
+							Count_temp <= Count_temp;
+							
+						when "011" =>
+							Count_temp <= Count_temp +1;
+							
+						when "100" =>
+							Count_temp <= Count_temp +2;
+							
+						when "101" =>
+							Count_temp <= Count_temp +5;
+							
+						when "110" =>
+							Count_temp <= Count_temp +6;
+							
+						when "111" =>
+							Count_temp <= Count_temp +12;
+						when others =>
+							Valid <= '0';
+							
+					end case;
 				end if;
 		end process;
 		Count <= Count_temp;
