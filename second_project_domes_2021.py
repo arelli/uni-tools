@@ -4,11 +4,12 @@
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 class BST:
-    def __init__(self, length):
+    def __init__(self, length,root):
         self.tree_array = [[None,None,None] for i in range(length)]
         self.avail_positions = [i for i in range(1,length)]
         self.root = 0
         self.avail = 0  # positions from 1 and after are free
+        self.tree_array[0] = [root, None, None]
 
     def get_left(self,index):
         return self.tree_array[index][1]
@@ -65,9 +66,18 @@ class BST:
             if index == None:
                 return -1  # nothing found
 
-    #def search_range(self):
+    # make this repetitive instead of recursive If possible
+    # https://www.geeksforgeeks.org/print-bst-keys-in-the-given-range/
+    def search_range(self,root_index,k1,k2):
+        if root_index == None:
+            return  # reached the end of the tree
+        if (self.tree_array[root_index][0] > k1):
+            self.search_range(self.tree_array[root_index][1],k1,k2)  # recursively call to left subtree
+        if (self.tree_array[root_index][0] >= k1) and (self.tree_array[root_index][0] <= k2):
+            print(self.tree_array[root_index][0])
+        if (self.tree_array[root_index][0] < k2):
+            self.search_range(self.tree_array[root_index][2], k1, k2)  # recursively call right subtree
 
-    #def del_element(self):
 
 
 
@@ -76,11 +86,8 @@ class BST:
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    new_bst = BST(10)
+    new_bst = BST(10,5)
     new_bst.print_tree()
-
-    new_bst.tree_array[0] = [5,None, None]  # create a root
-    #del(new_bst.avail_positions[0])
 
     new_bst.insert_key(2)
     new_bst.insert_key(8)
@@ -89,7 +96,10 @@ if __name__ == '__main__':
     new_bst.insert_key(10)
     new_bst.insert_key(15)
     new_bst.insert_key(12)
+    new_bst.insert_key(0)
 
 
     new_bst.print_tree()
+    print("test of the range search:")
+    new_bst.search_range(0,2,10)
 
