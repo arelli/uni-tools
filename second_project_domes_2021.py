@@ -3,6 +3,8 @@
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
+COUNT = [10]
+
 class BST:
     def __init__(self, length,root):
         self.tree_array = [[None,None,None] for i in range(length)]
@@ -10,6 +12,7 @@ class BST:
         self.root = 0
         self.avail = 0  # positions from 1 and after are free
         self.tree_array[0] = [root, None, None]
+        self.nodes = 1
 
     def get_left(self,index):
         return self.tree_array[index][1]
@@ -33,6 +36,7 @@ class BST:
                     self.tree_array[index][2] = self.avail_positions[0]  # connect the new child to its parent node
                     self.tree_array[self.avail_positions[0]] = [key, None, None]  # initialise new Node
                     del self.avail_positions[0]
+                    self.nodes += 1
                     return index
                 else:
                     index = self.get_right(index)
@@ -42,6 +46,7 @@ class BST:
                     self.tree_array[index][1] = self.avail_positions[0]  # connect the new child to its parent node
                     self.tree_array[self.avail_positions[0]] = [key, None, None]  # initialise new Node
                     del self.avail_positions[0]
+                    self.nodes += 1
                     return index
                 else:
                     index = self.get_left(index)
@@ -50,6 +55,7 @@ class BST:
     def print_tree(self):
         print(self.tree_array)
         print(self.avail_positions)
+        print("number of nodes:"  +  str(self.nodes))
 
     def search_key(self,key):  # key should be an int
         not_found = True
@@ -78,13 +84,37 @@ class BST:
         if (self.tree_array[root_index][0] < k2):
             self.search_range(self.tree_array[root_index][2], k1, k2)  # recursively call right subtree
 
+    # the next two functions: https://www.geeksforgeeks.org/print-binary-tree-2-dimensions/
+    def print2DUtil(self,root, space):
+        # Base case
+        if (root == None):
+            return
+        # Increase distance between levels
+        space += COUNT[0]
+        # Process right child first
+        self.print2DUtil(self.tree_array[root][2], space)  # right subtree
+        # Print current node after space
+        # count
+        print()
+        for i in range(COUNT[0], space):
+            print(end=" ")
+        print(self.tree_array[root][0])
+        # Process left child
+        self.print2DUtil(self.tree_array[root][1], space)  # left subtree
+
+    # Wrapper over print2DUtil()
+    def print2D(self):
+        self.print2DUtil(self.root, 0)
 
 
 
 
 
 
-# Press the green button in the gutter to run the script.
+
+
+
+    # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     new_bst = BST(10,5)
     new_bst.print_tree()
@@ -97,9 +127,12 @@ if __name__ == '__main__':
     new_bst.insert_key(15)
     new_bst.insert_key(12)
     new_bst.insert_key(0)
+    new_bst.insert_key(13)
 
 
     new_bst.print_tree()
     print("test of the range search:")
     new_bst.search_range(0,2,10)
+
+    new_bst.print2D()
 
