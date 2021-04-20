@@ -125,7 +125,7 @@ class BST:  # accepts no double keys!
 
         # 2) the node has one child --> connect node's parent with node's child
         if child_left is None and child_right is not None:  # has only right subtree
-            if self.tree_array[index][0] == self.tree_array[root][0]:
+            if self.tree_array[index][0] == self.tree_array[self.root][0]:
                 # TODO: add check whenever root is deleted, change the self.root variable.
                 pass
             self.tree_array[index] = self.tree_array[child_right]  # copy the child(of the child) node to the child
@@ -134,10 +134,10 @@ class BST:  # accepts no double keys!
             self.list_of_data.remove(key)
 
         elif child_left is not None and child_right is None:  # has only left subtree
-            if self.tree_array[index][0] == self.tree_array[root][0]:
+            if self.tree_array[index][0] == self.tree_array[self.root][0]:
                 # TODO: add check whenever root is deleted, change the self.root variable.
                 pass
-            
+
             self.tree_array[index] = self.tree_array[child_left]  # copy the child(of the child) node to the child
             self.tree_array[child_left] = [None, None, None]  # delete the node
             self.avail_positions.append(child_left)
@@ -154,10 +154,6 @@ class BST:  # accepts no double keys!
             index_of_successor = tmp_index_of_successor[len(tmp_index_of_successor)-1][0]  # translate->index tree_array
             tmp_successor_node = self.tree_array[index_of_successor]  # we have to keep it before we delete the node
 
-            if self.tree_array[index][0] == self.tree_array[root][0]:
-                # TODO: add check whenever root is deleted, change the self.root variable.
-                pass
-            
             # delete the successor node!
             self.delete_node(tmp_successor_node[0])
 
