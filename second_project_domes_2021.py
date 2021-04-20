@@ -95,7 +95,7 @@ class BST:  # accepts no double keys!
 
     def delete_node(self, key):
         search_index = self.search_key(key)  # get the position of the item to be deleted
-        index = search_index[(len(search_index)-1)][0]  # 2 is the number of items the search returned buffer has. Index is at position [0].
+        index = search_index[(len(search_index)-1)][0]  # get the last pair from search_index buffer(see search_key())
 
         child_value = self.tree_array[index][0]
         child_left = self.tree_array[index][1]
@@ -130,7 +130,7 @@ class BST:  # accepts no double keys!
             self.avail_positions.append(child_right)  # add to the available positions list
             self.list_of_data.remove(key)
 
-        if child_left is not None and child_right is None:  # has only left subtree
+        elif child_left is not None and child_right is None:  # has only left subtree
             self.tree_array[index] = self.tree_array[child_left]  # copy the child(of the child) node to the child
             self.tree_array[child_left] = [None, None, None]  # delete the node
             self.avail_positions.append(child_left)
@@ -139,29 +139,24 @@ class BST:  # accepts no double keys!
         # 3) the node has 2 children --> find inorder successor and replace the node
         if (child_left is not None) and (child_right is not None):
             # find the successor node
+            # TODO: it could be found as the min value of the right subtree of the to-be-deleted node.
             index_of_successor = self.list_of_data.index(key) + 1
 
+            # find the node that will replace our to-be-deleted node
+            tmp_index_of_successor = self.search_key(self.list_of_data[index_of_successor])  # index in the ordered list
+            index_of_successor = tmp_index_of_successor[len(tmp_index_of_successor)-1][0]  # translate->index tree_array
+            tmp_successor_node = self.tree_array[index_of_successor]  # we have to keep it before we delete the node
+
+            # delete the successor node!
+            self.delete_node(tmp_successor_node[0])
+
             # copy successor data(not node!) to the position of the node we want to delete
-            index_of_successor = self.search_key(self.list_of_data[index_of_successor])  # index in the inorder list
-            index_of_successor = index_of_successor[len(index_of_successor)-1][0]  # translate to index in tree_array
-            self.tree_array[index][0] = self.tree_array[index_of_successor][0]  # index in the real tree array
+            self.tree_array[index][0] = tmp_successor_node[0]  # replace the actual node(data only!)
 
             # if the successor has children, keep the "pointers" to them
-            # if self.tree_array[index_of_successor][1] is not None or self.tree_array[index_of_successor][2] is not None:
+            if tmp_successor_node[1] is not None or tmp_successor_node[2] is not None:
+                print("****does have children****")
 
-
-            # delete parent pointer to the successor node(right or left)
-            #big IF for testing if it is root that we re deleting
-            # search_index = self.search_key(self.tree_array[index_of_successor][0])
-            # parent_index = search_index[len(search_index)-2][0]
-            # if self.tree_array[parent_index][0] > self.tree_array[index_of_successor][0]:
-            #     self.tree_array[parent_index][1] = None  # delete left child
-            # elif self.tree_array[parent_index][0] < self.tree_array[index_of_successor][0]:
-            #     self.tree_array[parent_index][2] = None  # delete right child
-
-
-            # delete the actual successor node and free it in avail list
-            self.tree_array[index_of_successor] = [None, None, None]
 
             # do the necessary housekeeping...
             self.avail_positions.append(index_of_successor)
@@ -195,7 +190,7 @@ class BST:  # accepts no double keys!
 
 
 if __name__ == '__main__':
-    new_bst = BST(15, 5)  # create a tree with 15 nodes and 5(data) as a root
+    new_bst = BST(100, 5)  # create a tree with 15 nodes and 5(data) as a root
 
     for i in [2, 8, 7, 1, 3, 10, 12, 20, 0, 3]:
         new_bst.insert_key(i)
@@ -205,7 +200,7 @@ if __name__ == '__main__':
 
     new_bst.print2D()
 
-    new_bst.delete_node(1)
+    new_bst.delete_node(8)
 
 
     new_bst.print2D()
