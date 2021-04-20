@@ -4,8 +4,8 @@
 
 class BST:  # accepts no double keys!
     def __init__(self, length, root):
-        self.tree_array = [[None, None, None] for i in range(length)]
-        self.avail_positions = [i for i in range(1, length)]
+        self.tree_array = [[None, None, None] for _ in range(length)]  # underscore for unused value
+        self.avail_positions = [pos for pos in range(1, length)]
         self.root = 0
         self.avail = 0  # positions from 1 and after are free
         self.tree_array[0] = [root, None, None]
@@ -34,7 +34,7 @@ class BST:  # accepts no double keys!
                 return index  # element already in the tree
 
             elif key > curr_data:
-                if self.get_right(index) == None:  # search a node that has no leaf in our direction
+                if self.get_right(index) is None:  # search a node that has no leaf in our direction
                     self.tree_array[index][2] = self.avail_positions[0]  # connect the new child to its parent node
                     self.tree_array[self.avail_positions[0]] = [key, None, None]  # initialise new Node
                     del self.avail_positions[0]
@@ -46,7 +46,7 @@ class BST:  # accepts no double keys!
                     index = self.get_right(index)
 
             elif key < curr_data:
-                if self.get_left(index) == None:
+                if self.get_left(index) is None:
                     self.tree_array[index][1] = self.avail_positions[0]  # connect the new child to its parent node
                     self.tree_array[self.avail_positions[0]] = [key, None, None]  # initialise new Node
                     del self.avail_positions[0]
@@ -83,15 +83,21 @@ class BST:  # accepts no double keys!
 
     # make this repetitive instead of recursive If possible
     # https://www.geeksforgeeks.org/print-bst-keys-in-the-given-range/
-    def search_range(self, root_index, k1, k2):
-        if root_index == None:
+    def search_range_recursive(self, root_index, k1, k2):
+        # TODO: validate that the results are OK. Strange behaviour observed here missing some results.
+        if root_index is None:
             return  # reached the end of the tree
-        if (self.tree_array[root_index][0] > k1):
-            self.search_range(self.tree_array[root_index][1], k1, k2)  # recursively call to left subtree
+        if self.tree_array[root_index][0] > k1:
+            self.search_range_recursive(self.tree_array[root_index][1], k1, k2)  # recursively call to left subtree
         if (self.tree_array[root_index][0] >= k1) and (self.tree_array[root_index][0] <= k2):
-            print(self.tree_array[root_index][0])
-        if (self.tree_array[root_index][0] < k2):
-            self.search_range(self.tree_array[root_index][2], k1, k2)  # recursively call right subtree
+            print(str(self.tree_array[root_index][0]) + ',', end="")
+        if self.tree_array[root_index][0] < k2:
+            self.search_range_recursive(self.tree_array[root_index][2], k1, k2)  # recursively call right subtree
+
+    # wrapper method of the above
+    def search_range(self, k1, k2):
+        print("recursive range search: ", end="")
+        self.search_range_recursive(self.root, k1, k2)
 
     def delete_node(self, key):
         search_index = self.search_key(key)  # get the position of the item to be deleted
@@ -125,19 +131,12 @@ class BST:  # accepts no double keys!
 
         # 2) the node has one child --> connect node's parent with node's child
         if child_left is None and child_right is not None:  # has only right subtree
-            if self.tree_array[index][0] == self.tree_array[self.root][0]:
-                # TODO: add check whenever root is deleted, change the self.root variable.
-                pass
             self.tree_array[index] = self.tree_array[child_right]  # copy the child(of the child) node to the child
             self.tree_array[child_right] = [None, None, None]  # delete the node
             self.avail_positions.append(child_right)  # add to the available positions list
             self.list_of_data.remove(key)
 
         elif child_left is not None and child_right is None:  # has only left subtree
-            if self.tree_array[index][0] == self.tree_array[self.root][0]:
-                # TODO: add check whenever root is deleted, change the self.root variable.
-                pass
-
             self.tree_array[index] = self.tree_array[child_left]  # copy the child(of the child) node to the child
             self.tree_array[child_left] = [None, None, None]  # delete the node
             self.avail_positions.append(child_left)
@@ -169,17 +168,15 @@ class BST:  # accepts no double keys!
             self.avail_positions.append(index_of_successor)
             self.list_of_data.remove(key)
 
-
-
     # the next two functions: https://www.geeksforgeeks.org/print-binary-tree-2-dimensions/
-    def print2DUtil(self, root, space):
+    def print_util(self, root, space):
         # Base case
         if (root == None):
             return
         # Increase distance between levels
         space += self.space_count
         # Process right child first
-        self.print2DUtil(self.tree_array[root][2], space)  # right subtree
+        self.print_util(self.tree_array[root][2], space)  # right subtree
         # Print current node after space
         # count
         print()
@@ -187,11 +184,11 @@ class BST:  # accepts no double keys!
             print(end=" ")
         print(self.tree_array[root][0])
         # Process left child
-        self.print2DUtil(self.tree_array[root][1], space)  # left subtree
+        self.print_util(self.tree_array[root][1], space)  # left subtree
 
     # Wrapper over print2DUtil()
-    def print2D(self):
-        self.print2DUtil(self.root, 0)
+    def print_tree(self):
+        self.print_util(self.root, 0)
         print("Data sorted: " + str(self.list_of_data))
         print("number of nodes:" + str(self.nodes))
 
@@ -203,13 +200,16 @@ if __name__ == '__main__':
         new_bst.insert_key(i)
 
     print("test of the range search:")
-    new_bst.search_range(0, 2, 10)
+    new_bst.search_range(10, 14)
 
-    new_bst.print2D()
+    new_bst.print_tree()
 
-    new_bst.delete_node(8)
+    new_bst.delete_node(5)
+
+    for i in [11,13,14,4]:
+        new_bst.insert_key(i)
 
 
-    new_bst.print2D()
+    new_bst.print_tree()
 
     print(new_bst.search_key(12))
