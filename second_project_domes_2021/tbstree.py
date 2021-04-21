@@ -19,7 +19,7 @@ class Node:
     def get_right(self):
         return self.right_pointer
 
-    def get_data(self):
+    def get_data(self) -> int:
         return self.data
 
     def set_data(self,data):
@@ -52,22 +52,88 @@ class Node:
             return 'D={},L={},R(t)={}'.format(self.data, self.left_pointer, self.right_pointer)
         if self.has_left():
             return 'D={},L(t)={},R={}'.format(self.data, self.left_pointer, self.right_pointer)
+        if self.data is not None:
+            return 'D={}(only)'.format(self.data)
         else:
             return '(node not initialised)'
 
 
 class TBST:  # accepts no double keys!
     def __init__(self, length):
-        # the first and last booleans indicate if there is a thread pointer or a normal one.
+        self.length = length
         self.tree_array = [Node() for _ in range(length)]  # underscore for unused value
-        self.avail_positions = [pos for pos in range(1, length)]
+        self.avail_positions = [pos for pos in range(0, length)]
         self.root = 0
         self.avail = 0  # positions from 1 and after are free
         self.space_count = 8  # spacing on print function
         self.list_of_data = []  # sorted every node's data is here
 
+    def get_min(self):
+        node = self.tree_array[self.root]
+        while node.has_left_thread is not True:
+            node = self.tree_array[node.get_left()]
+        return node.get_data()
+
+    def get_max(self):
+        node = self.tree_array[self.root]
+        while node.has_right_thread is not True:
+            node = self.tree_array[node.get_right()]
+        return node.get_data()
+
+
     def insert_key(self, key):  # uses the search function
-        pass
+        not_found = True
+        index = self.root
+        if not self.avail_positions:
+            print("No more available space in the array to write nodes.")
+            return -1
+        if len(self.avail_positions) == self.length:  # if there is no data in the array
+            self.tree_array[self.avail_positions[0]].set_data(key)  # pop() also deletes it
+            self.tree_array[self.avail_positions[0]].has_left_thread = True  # special case only for root!
+            self.tree_array[self.avail_positions.pop(0)].has_right_thread = True
+            self.list_of_data.append(key)
+            self.list_of_data.sort()
+            return
+
+        while not_found:
+            curr_data = self.tree_array[index].get_data()
+            if curr_data == key:
+                return 1  # this key is already in the tree
+            elif key > curr_data:
+                if self.tree_array[index].has_right_thread:  # means that there is no right subtree
+                    self.tree_array[index].set_right_index(self.avail_positions[0])  # set parent pointer to child
+                    self.tree_array[self.avail_positions.pop(0)].set_data(key) # pop() also deletes it
+                    self.list_of_data.append(key)
+                    self.list_of_data.sort()
+                    # TODO: create the threads
+                    if key == self.get_max():# doesn't have right thread, only left
+                        # find the exactly smaller node and point to it
+                        pass
+                    else:
+                        # find the exactly smaller and the exactly bigger node and point to them
+                        pass
+                    
+                    return index
+                else:
+                    index = self.tree_array[index].get_right()
+
+            elif key < curr_data:
+                if self.tree_array[index].has_left_thread:  # means that there is no left subtree
+                    self.tree_array[index].set_left_index(self.avail_positions[0])
+                    self.tree_array[self.avail_positions.pop(0)].set_data(key)  # set the data field in the node
+                    self.list_of_data.append(key)
+                    self.list_of_data.sort()
+                    # TODO: create the threads
+                    if key == self.get_min():# doesn't have left thread, only right
+                        # find the exactly bigger node and point to it
+                        pass
+                    else:
+                        # find the exactly smaller and the exactly bigger node and point to them
+                        pass
+                    
+                    return index
+                else:
+                    index = self.tree_array[index].get_left()
 
     def search_key(self, key):  # key should be an int
         pass
