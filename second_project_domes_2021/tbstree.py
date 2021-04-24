@@ -112,7 +112,7 @@ class TBST:  # accepts no double keys!
                     else:
                         # find the exactly smaller and the exactly bigger node and point to them
                         pass
-                    
+
                     return index
                 else:
                     index = self.tree_array[index].get_right()
@@ -130,13 +130,33 @@ class TBST:  # accepts no double keys!
                     else:
                         # find the exactly smaller and the exactly bigger node and point to them
                         pass
-                    
+
                     return index
                 else:
                     index = self.tree_array[index].get_left()
 
     def search_key(self, key):  # key should be an int
-        pass
+        buffer = []
+        not_found = True
+        index = self.root
+        while not_found:
+            curr_data = self.tree_array[index].get_data()
+            buffer.append([index, self.tree_array[index].get_data()])
+            if curr_data == key:
+                return buffer
+            elif curr_data is None:
+                return -1  # failed to find the key
+            elif key > curr_data:
+                index = self.tree_array[index].get_right()
+            elif key < curr_data:
+                if self.tree_array[index].has_left_thread:
+                    return -1
+                else:
+                    index = self.tree_array[index].get_left()
+
+            if len(buffer)>2:
+                buffer.pop(0)
+
 
     def search_range_recursive(self, root_index, k1, k2):
         pass
