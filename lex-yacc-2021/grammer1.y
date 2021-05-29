@@ -97,6 +97,8 @@
 %type <str> const_decl
 %type <str> const_decl_section
 %type <str> prologue
+//%type <str> function_declaration
+//%type <str> parameters
 
 %start prologue
 
@@ -110,7 +112,7 @@ prologue : lines {        // the print is at the top of the recursion tree! impo
         if (yyerror_count == 0) {
         printf("%s\n", $1);  // this is needed(at the top of the recursion tree) to produce code.
         }
-    }
+    };
 
 lines :  line { $$ = $1;}  // just to read multiple lines
     | lines line {$$ = template("%s\n%s", $1, $2);} 
@@ -121,10 +123,15 @@ line : var_decl_section | const_decl_section
         
 // program : var_decl_section const_decl_section func_decl_section {};
 //function_declaration : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data_type LEFT_CURLY function_body RIGHT_CURLY
-//{$$ = template("%s %s(%s)\n{ $s\n}",$6,$2,$4,$8);}
+//{$$ = template("%s %s(%s){\n%s\n}",$6, $2, $4,$8);};
 
+//parameters : expr_or_string { $$ = template("$s",$1);}
+ //           | parameters COMMA expr_or_string { $$ = template("%s,$s",$1, $3);}
+
+// single constant declaration grammar 
 const_decl : CONST list_of_assignments data_type SEMIC {$$ = template("const %s %s;", $3,$2);}
 
+// multiple constant declaration grammar
 const_decl_section: const_decl const_decl_section {$$ = template("%s \n%s", $1,$2);} 
                 | const_decl { $$ = $1;} // TODO: make this optional
                 ;
@@ -185,8 +192,8 @@ expression : INT { $$ = $1;}  // print as is
 function_call : ID LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS
                 {$$ = template("%s(%s)",$1,$3);};
 
-list_of_arguments : expression {$$ = template("%s",$1);}
-                    | list_of_arguments COMMA expression {$$ = template("%s,%s",$1,$3);};
+list_of_arguments : expr_or_string {$$ = template("%s",$1);}
+                    | list_of_arguments COMMA expr_or_string {$$ = template("%s,%s",$1,$3);};
                     
 array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1, $3);};
 %%
