@@ -72,11 +72,14 @@
 %left GREATER_OR_EQUALS GREATER_THAN LESS_THAN LESS_THAN_OR_EQUALS LOGIC_EQUALS LOGIC_NOT_EQUALS
 %left PLUS MINUS
 %left STAR SLASH PERCENT
-%left DOUBLE_STAR
+%right DOUBLE_STAR
 %left LOGIC_NOT
-
+%left LEFT_PARENTESIS
+%right RIGHT_PARENTHESIS
 
 %type <str> expression
+%type <str> function_call
+%type <str> list_of_arguments
 
 
 %start start_of_program
@@ -94,7 +97,6 @@ start_of_program : expression{
   }
 }
 /*rules */
-
 
 expression : INT { $$ = $1;}  // print as is
 	   | REAL // the default action is $$=$1
@@ -116,9 +118,17 @@ expression : INT { $$ = $1;}  // print as is
        | LOGIC_NOT expression { $$ = template("!%s", $2);}
        | PLUS expression { $$ = template("%s", $2);}
        | MINUS expression { $$ = template("(-1)*%s", $2);}
-       // needs many more operations
        | ID { $$ = $1 ;}  // to be able to give complex values to variables
+       | FALSE              {$$ = template("0");}
+       | TRUE               {$$ = template("1");}    
+       | function_call  { $$ = $1;} 
  ;
+
+function_call : ID LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS
+                {$$ = template("%s(%s)",$1,$3);};
+
+list_of_arguments : expression {$$ = template("%s",$1);}
+                    | list_of_arguments COMMA expression {$$ = template("%s,%s",$1,$3);};
 
 %%
 void main() {
