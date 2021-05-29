@@ -96,47 +96,42 @@
 %type <str> line
 %type <str> const_decl
 %type <str> const_decl_section
+%type <str> prologue
 
-%start lines
+%start prologue
 
 
 
 %%  // the beginning of the rules section
-lines :  line { $$ = $1;}
-    //lines line { $$ = $2;}
+prologue : lines {        // the print is at the top of the recursion tree! important.
+        puts("#include<pilib.h>"); 
+        puts("#include<math.h>");  //include it for the pow() function
+        printf("/* program */ \n\n");
+        if (yyerror_count == 0) {
+        printf("%s\n", $1);  // this is needed(at the top of the recursion tree) to produce code.
+        }
+    }
+
+lines :  line { $$ = $1;}  // just to read multiple lines
+    | lines line {$$ = template("%s\n%s", $1, $2);} 
 ;
         
-line : var_decl_section { 
-      if (yyerror_count == 0) {
-        // include the pilib.h file
-        puts(c_prologue); 
-        puts("#include<math.h>");  //include it for the pow() function
-        printf("/* program */ \n\n");
-        printf("%s\n", $1);  // this is needed(at the top of the recursion tree) to produce code.
-      }
-}
-      | const_decl_section { 
-      if (yyerror_count == 0) {
-        // include the pilib.h file
-        puts(c_prologue); 
-        puts("#include<math.h>");  //include it for the pow() function
-        printf("/* program */ \n\n");
-        printf("%s\n", $1);  // this is needed(at the top of the recursion tree) to produce code.
-      }
-} ;
+line : var_decl_section | const_decl_section 
+ ;
+        
+// program : var_decl_section const_decl_section func_decl_section {};
+//function_declaration : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data_type LEFT_CURLY function_body RIGHT_CURLY
+//{$$ = template("%s %s(%s)\n{ $s\n}",$6,$2,$4,$8);}
 
+const_decl : CONST list_of_assignments data_type SEMIC {$$ = template("const %s %s;", $3,$2);}
 
-const_decl : CONST ID ASSIGN  expr_or_string data_type SEMIC {$$ = template("const %s %s =  %s", $5,$2,$4);}
-
-const_decl_section: const_decl const_decl_section { $$ = $1;} 
-                | const_decl { $$ = $1;} // OPTIONAL and NOT_OPT..
-                //| %empty {$$="";}   //TODO: fix 1 conflict from here.(1state 13)
+const_decl_section: const_decl const_decl_section {$$ = template("%s \n%s", $1,$2);} 
+                | const_decl { $$ = $1;} // TODO: make this optional
                 ;
 
 
-var_decl_section: var_decl var_decl_section { $$ = $1;} 
-                | var_decl { $$ = $1;} // OPTIONAL and NOT_OPT..
-                //| %empty {$$="";}   //TODO: fix 1 conflict from here.(1state 13)
+var_decl_section: var_decl var_decl_section {$$ = template("%s \n%s", $1,$2);} 
+                | var_decl { $$ = $1;}  // TODO: make this optional
                 ;
 
 var_decl : VAR list_of_assignments data_type SEMIC {$$ = template("%s %s;", $3,$2);};  // TODO remove this scenario!!!!
