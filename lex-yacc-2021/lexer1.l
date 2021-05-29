@@ -1,61 +1,10 @@
  /* c inclusions and initialisations */
 %{
 #include<stdio.h>
+#include <string.h>
+#include "grammer.tab.h"
 
-#define ID 1
-#define INT 2
-#define REAL 3
-#define ASSIGN 4
-#define STR 5
-#define INT_TYPE 6
-#define REAL_TYPE 7
-#define STR_TYPE 8
-#define BOOL 9
-#define TRUE 10
-#define FALSE 11
-#define VAR 12
-#define CONST 13
-#define IF 14
-#define ELSE 15
-#define FOR 16
-#define WHILE 17 
-#define BREAK 18
-#define CONTINUE 19
-#define FUNC 20
-#define NIL 21 
-#define AND 22
-#define OR 23
-#define NOT 24
-#define RETURN 25
-#define KW_BEGIN 26
-#define PLUS 27
-#define MINUS 28 
-#define STAR 29
-#define SLASH 30
-#define PERCENT 31
-#define DOUBLE_STAR 32
-#define LOGIC_EQUALS 33
-#define LOGIC_NOT_EQUALS 34
-#define LESS_THAN 35
-#define LESS_THAN_OR_EQUALS 36
-#define GREATER_THAN 37
-#define GREATER_OR_EQUALS 38
-#define LOGIC_AND 39
-#define LOGIC_OR 40
-#define LOGIC_NOT 41
-#define LEFT_PARENTESIS 42
-#define RIGHT_PARENTHESIS 43
-#define COLON 44
-#define COMMA 45
-#define LEFT_BRACKET 46
-#define RIGHT_BRACKET 47
-#define LEFT_CURLY 48
-#define RIGHT_CURLY 49
-#define COMMENT 50
-#define MULTI_LINE_COMMENT 51
- /* #define WHITESPACE 52 */
-
-int counter_of_lines = 0;
+int line_num = 0;
 %}
 
 DIGIT [0-9]
@@ -65,8 +14,9 @@ REAL {DECIMAL}([eE][-+]?{NUMBER})?
 ID  [a-zA-Z_][0-9a-zA-Z_]*  
 STR \"[^\"\n]*\"
 
-%x comment
+ /* define the start condition */
 
+%x comment  
 
 %%
 
@@ -126,32 +76,24 @@ STR \"[^\"\n]*\"
  /* " " {return WHITESPACE;} */
 
  /* these have to be after the above rules! */
-
+{NUMBER} {printf("token INT: %s\n",yytext);return INT;}
 {REAL} {printf("token REAL: %s\n", yytext);return REAL;}
 {ID} {printf("token ID: %s\n", yytext);return ID;}
 {STR} {printf("token STR: %s\n", yytext);return STR;}
 
 
-\n counter_of_lines++;
+\n line_num++;
 
 [ \t\r]  /* do nothing in white space */
 
 <<EOF>>  return EOF;
 
-. {printf("Unrecognized tolkien %s in line %d\n", yytext, counter_of_lines);}  
+. {printf("Unrecognized tolkien %s in line %d\n", yytext, line_num);}  
 
 "//"[^\n]*  		    /* we dont care about comments */
 "/*"                    {BEGIN(comment);}
 <comment>[^*\n]*        /* eat anything that's not a '*' */ 
 <comment>"*"+[^*/\n]*   /* dont count * without / after them */
-<comment>\n             {counter_of_lines++;} 
+<comment>\n             {line_num++;} 
 <comment>"*"+"/"        { BEGIN(INITIAL);} /* initial is the normal flow of flex */
-
-
 %%
-
-int main() {
-	int token;
-	while ((token=yylex())!=EOF)
-		yylex();  /* the prints happen inside the rules section above */
-}
