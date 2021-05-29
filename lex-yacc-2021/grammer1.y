@@ -2,6 +2,7 @@
 %{  
     #include <stdio.h>
     #include "cgen.h"
+    #include <math.h>
     
     extern int yylex(void);  /* runs from the lex.yy.c in the same dir */
     extern int line_counter;
@@ -66,9 +67,14 @@
 %token COMMENT 
 %token MULTI_LINE_COMMENT 
 
-
+%left LOGIC_OR
+%left LOGIC_AND
+%left GREATER_OR_EQUALS GREATER_THAN LESS_THAN LESS_THAN_OR_EQUALS LOGIC_EQUALS LOGIC_NOT_EQUALS
 %left PLUS MINUS
-%left STAR SLASH
+%left STAR SLASH PERCENT
+%left DOUBLE_STAR
+%left LOGIC_NOT
+
 
 %type <str> expression
 
@@ -79,16 +85,17 @@
 
 %%  // the beginning of the rules section
 
-//%start start_function  // the action thet begins the program
 start_of_program : expression{ 
   if (yyerror_count == 0) {
     // include the pilib.h file
     puts(c_prologue); 
     printf("/* program */ \n\n");
-    printf("%s\n", $1);
+    printf("%s\n", $1);  // this is needed(at the top of the recursion tree) to produce code.
   }
 }
 /*rules */
+
+
 expression : INT { $$ = $1;}  // print as is
 	   | REAL // the default action is $$=$1
 	   | LEFT_PARENTESIS expression RIGHT_PARENTHESIS { $$ = template("(%s)",$2);}
@@ -96,6 +103,19 @@ expression : INT { $$ = $1;}  // print as is
        | expression MINUS expression { $$ = template("%s - %s", $1, $3);}
        | expression STAR expression { $$ = template("%s * %s", $1, $3);}
        | expression SLASH expression { $$ = template("%s / %s", $1, $3);}
+       | expression GREATER_THAN expression { $$ = template("%s > %s", $1, $3);}
+       | expression GREATER_OR_EQUALS expression { $$ = template("%s >= %s", $1, $3);}
+       | expression LESS_THAN expression { $$ = template("%s < %s", $1, $3);}
+       | expression LESS_THAN_OR_EQUALS expression { $$ = template("%s <= %s", $1, $3);}
+       | expression PERCENT expression { $$ = template("%s % %s", $1, $3);}
+       | expression DOUBLE_STAR expression { $$ = template("pow(%s,%s)", $1, $3);}
+       | expression LOGIC_EQUALS expression { $$ = template("%s == %s", $1, $3);}
+       | expression LOGIC_NOT_EQUALS expression { $$ = template("%s != %s", $1, $3);}
+       | expression LOGIC_AND expression { $$ = template("%s && %s", $1, $3);}
+       | expression LOGIC_OR expression { $$ = template("%s || %s", $1, $3);}
+       | LOGIC_NOT expression { $$ = template("!%s", $2);}
+       | PLUS expression { $$ = template("%s", $2);}
+       | MINUS expression { $$ = template("(-1)*%s", $2);}
        // needs many more operations
        | ID { $$ = $1 ;}  // to be able to give complex values to variables
  ;
