@@ -34,6 +34,7 @@
 %token WHILE 
 %token BREAK 
 %token CONTINUE 
+%token SEMIC
 %token FUNC 
 %token NIL 
 %token AND 
@@ -58,7 +59,6 @@
 %token LOGIC_NOT
 %token LEFT_PARENTESIS 
 %token RIGHT_PARENTHESIS 
-%token COLON 
 %token COMMA 
 %token LEFT_BRACKET 
 %token RIGHT_BRACKET 
@@ -84,6 +84,11 @@
 %type <str> function_call
 %type <str> array_call
 %type <str> list_of_arguments
+%type <str> var_decl
+%type <str> list_of_assignments
+%type <str> array_type
+%type <str> data_type
+%type <str> expr_or_string
 
 
 %start start_of_program
@@ -92,7 +97,7 @@
 
 %%  // the beginning of the rules section
 
-start_of_program : expression{ 
+start_of_program : var_decl{ 
   if (yyerror_count == 0) {
     // include the pilib.h file
     puts(c_prologue); 
@@ -102,6 +107,28 @@ start_of_program : expression{
   }
 }
 /*rules */
+var_decl : VAR list_of_assignments data_type SEMIC {$$ = template("%s %s;", $3,$2);}
+| expression { $$ = $1;} ;  // TODO remove this scenario!!!!
+
+list_of_assignments: ID ASSIGN  expr_or_string {$$ = template("%s=%s",$1,$3);}
+                    | ID ASSIGN  expr_or_string COMMA list_of_assignments {$$ = template("%s=%s, %s",$1,$3,$5);}
+                    |ID COMMA list_of_assignments {$$=template("%s,%s",$1,$3);}
+                    |ID {$$=template("%s",$1);};
+                    
+expr_or_string: expression 
+                | STR ;  // we want to assign either an expression, or a string.
+
+data_type:  // int-->int , real --> double, string-->char*, bool--> int(0 or 1) etcmu
+    INT_TYPE  { $$ =template("int");} 
+    | REAL_TYPE { $$ =template("double");} 
+    | BOOL { $$ = template("bool");} 
+    | STR_TYPE { $$ = template("char*");} 
+    | array_type { $$ = $1;} 
+  
+array_type : array_call data_type {$$ = template("%s %s",$2, $1);}
+           | LEFT_BRACKET RIGHT_BRACKET data_type {$$ = template("%s*",$3);}
+;
+
 
 expression : INT { $$ = $1;}  // print as is
 	   | REAL // the default action is $$=$1
