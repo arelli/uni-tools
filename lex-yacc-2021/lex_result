@@ -1,0 +1,25 @@
+token CONST: const
+token ID: message
+token EQUALS : =
+token STR: "Hello World!\n"
+token STR_TYPE: string
+token COLON: ;
+token FUNC: func
+token KW_BEGIN: begin
+token LEFT_PARENTESIS: (
+token RIGHT_PARENTHESIS: )
+token LEFT_CURLY: {
+token ID: writeString
+token LEFT_PARENTESIS: (
+token ID: message
+token RIGHT_PARENTHESIS: )
+token COLON: ;
+token RIGHT_CURLY: }
+Unrecognized tolkien " in line 5
+token ID: this
+token ID: is
+token ID: a
+token ID: multiline
+token STR_TYPE: string
+Unrecognized tolkien ! in line 6
+Unrecognized tolkien " in line 6

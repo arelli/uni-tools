@@ -1,0 +1,8 @@
+const message = "Hello World!\n" string;
+ func begin() {
+    writeString(message); 
+    }
+
+" this is a multiline 
+string!"
+/* My first pi program! */
