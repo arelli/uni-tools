@@ -81,8 +81,6 @@
 //%right RIGHT_BRACKET
 %right RIGHT_PARENTHESIS
 
-
-
 %type <str> expression
 %type <str> function_call
 %type <str> array_call
@@ -116,8 +114,7 @@ var_decl_section: var_decl var_decl_section { $$ = $1;}
                 | %empty {$$="";}   //TODO: fix 1 conflict from here.(1state 13)
                 ;
 
-var_decl : VAR list_of_assignments data_type SEMIC {$$ = template("%s %s;", $3,$2);};
-| expression { $$ = $1;} ;  // TODO remove this scenario!!!!
+var_decl : VAR list_of_assignments data_type SEMIC {$$ = template("%s %s;", $3,$2);};  // TODO remove this scenario!!!!
 
 list_of_assignments: ID ASSIGN  expr_or_string {$$ = template("%s=%s",$1,$3);}
                     | ID ASSIGN  expr_or_string COMMA list_of_assignments {$$ = template("%s=%s, %s",$1,$3,$5);}
