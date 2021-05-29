@@ -82,6 +82,7 @@
 
 %type <str> expression
 %type <str> function_call
+%type <str> array_call
 %type <str> list_of_arguments
 
 
@@ -95,6 +96,7 @@ start_of_program : expression{
   if (yyerror_count == 0) {
     // include the pilib.h file
     puts(c_prologue); 
+    puts("#include<math.h>");  //include it for the pow() function
     printf("/* program */ \n\n");
     printf("%s\n", $1);  // this is needed(at the top of the recursion tree) to produce code.
   }
@@ -112,7 +114,7 @@ expression : INT { $$ = $1;}  // print as is
        | expression GREATER_OR_EQUALS expression { $$ = template("%s >= %s", $1, $3);}
        | expression LESS_THAN expression { $$ = template("%s < %s", $1, $3);}
        | expression LESS_THAN_OR_EQUALS expression { $$ = template("%s <= %s", $1, $3);}
-       | expression PERCENT expression { $$ = template("%s % %s", $1, $3);}
+       | expression PERCENT expression { $$ = template("%s %s %s", $1,"%", $3);}
        | expression DOUBLE_STAR expression { $$ = template("pow(%s,%s)", $1, $3);}
        | expression LOGIC_EQUALS expression { $$ = template("%s == %s", $1, $3);}
        | expression LOGIC_NOT_EQUALS expression { $$ = template("%s != %s", $1, $3);}
@@ -121,12 +123,11 @@ expression : INT { $$ = $1;}  // print as is
        | LOGIC_NOT expression { $$ = template("!%s", $2);}
        | PLUS expression { $$ = template("%s", $2);}
        | MINUS expression { $$ = template("(-1)*%s", $2);}
-       | FALSE              {$$ = template("0");}
-       | TRUE               {$$ = template("1");}    
-       | function_call  { $$ = $1;} 
-       | ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1, $3);}  // array call
-       | ID { $$ = $1 ;}  // variables inside expressions. Important! after the array rule!.
-       
+       | FALSE {$$ = template("0");}
+       | TRUE {$$ = template("1");}    
+       | function_call {$$ = $1;} 
+       | array_call {$$ = $1;}  // array call
+       | ID {$$ = $1 ;}  // variables inside expressions. Important! after the array rule!.
  ;
 
 function_call : ID LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS
@@ -134,10 +135,12 @@ function_call : ID LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS
 
 list_of_arguments : expression {$$ = template("%s",$1);}
                     | list_of_arguments COMMA expression {$$ = template("%s,%s",$1,$3);};
+                    
+array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1, $3);};
 %%
 void main() {
 	if (yyparse() == 0)
-		printf("Accepted the input!\n");
+		printf("Input OK.\n");
 	else
-		printf("Input not accepted. \n");
+		printf("Invalid input.\n");
 	}
