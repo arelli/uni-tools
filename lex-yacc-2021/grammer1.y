@@ -97,8 +97,9 @@
 %type <str> const_decl
 %type <str> const_decl_section
 %type <str> prologue
-//%type <str> function_declaration
-//%type <str> parameters
+%type <str> function_declaration
+%type <str> parameters
+%type <str> function_body
 
 %start prologue
 
@@ -110,23 +111,34 @@ prologue : lines {        // the print is at the top of the recursion tree! impo
         puts("#include<math.h>");  //include it for the pow() function
         printf("/* program */ \n\n");
         if (yyerror_count == 0) {
-        printf("%s\n", $1);  // this is needed(at the top of the recursion tree) to produce code.
+            printf("%s\n", $1);  // this is needed(at the top of the recursion tree) to produce code.
         }
     };
 
-lines :  line { $$ = $1;}  // just to read multiple lines
+lines :  line {$$ = $1;}  // just to read multiple lines
     | lines line {$$ = template("%s\n%s", $1, $2);} 
 ;
         
-line : var_decl_section | const_decl_section 
+line : var_decl_section | const_decl_section | function_declaration
  ;
         
 // program : var_decl_section const_decl_section func_decl_section {};
-//function_declaration : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data_type LEFT_CURLY function_body RIGHT_CURLY
-//{$$ = template("%s %s(%s){\n%s\n}",$6, $2, $4,$8);};
+function_declaration : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data_type LEFT_CURLY function_body RIGHT_CURLY
+{$$ = template("%s %s(%s){\n%s\n}",$6, $2, $4,$8);};
 
-//parameters : expr_or_string { $$ = template("$s",$1);}
- //           | parameters COMMA expr_or_string { $$ = template("%s,$s",$1, $3);}
+parameters : expr_or_string { $$ = template("%s",$1);}
+           | parameters COMMA expr_or_string { $$ = template("%s,%s",$1, $3);};
+           
+function_body : INT { $$ = template("10");}  // test, for the moment. TODO: fix it and add an actual body
+
+//statements : // all the statements(one line only!)
+             // for, while,if(all revursive), assignment_line, function_call,break,continue
+
+
+
+
+
+
 
 // single constant declaration grammar 
 const_decl : CONST list_of_assignments data_type SEMIC {$$ = template("const %s %s;", $3,$2);}
