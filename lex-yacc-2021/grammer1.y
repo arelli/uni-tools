@@ -67,6 +67,8 @@
 %token COMMENT 
 %token MULTI_LINE_COMMENT 
 
+
+
 %left LOGIC_OR
 %left LOGIC_AND
 %left GREATER_OR_EQUALS GREATER_THAN LESS_THAN LESS_THAN_OR_EQUALS LOGIC_EQUALS LOGIC_NOT_EQUALS
@@ -80,6 +82,7 @@
 %right RIGHT_PARENTHESIS
 
 
+
 %type <str> expression
 %type <str> function_call
 %type <str> array_call
@@ -89,6 +92,7 @@
 %type <str> array_type
 %type <str> data_type
 %type <str> expr_or_string
+%type <str> var_decl_section
 
 
 %start start_of_program
@@ -97,7 +101,7 @@
 
 %%  // the beginning of the rules section
 
-start_of_program : var_decl{ 
+start_of_program : var_decl_section{ 
   if (yyerror_count == 0) {
     // include the pilib.h file
     puts(c_prologue); 
@@ -107,7 +111,12 @@ start_of_program : var_decl{
   }
 }
 /*rules */
-var_decl : VAR list_of_assignments data_type SEMIC {$$ = template("%s %s;", $3,$2);}
+var_decl_section: var_decl var_decl_section { $$ = $1;} 
+                | var_decl { $$ = $1;} // OPTIONAL and NOT_OPT..
+                | %empty {$$="";}   //TODO: fix 1 conflict from here.(1state 13)
+                ;
+
+var_decl : VAR list_of_assignments data_type SEMIC {$$ = template("%s %s;", $3,$2);};
 | expression { $$ = $1;} ;  // TODO remove this scenario!!!!
 
 list_of_assignments: ID ASSIGN  expr_or_string {$$ = template("%s=%s",$1,$3);}
