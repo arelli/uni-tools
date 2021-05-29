@@ -69,6 +69,7 @@
 
 
 
+
 %left LOGIC_OR
 %left LOGIC_AND
 %left GREATER_OR_EQUALS GREATER_THAN LESS_THAN LESS_THAN_OR_EQUALS LOGIC_EQUALS LOGIC_NOT_EQUALS
@@ -100,8 +101,15 @@
 %type <str> function_declaration
 %type <str> parameters
 %type <str> function_body
+%type <str> statement
+%type <str> return_line
+%type <str> assignment_line
+%type <str> if_stmt
+%type <str> else_stmt
+%type <str> statements
 
 %start prologue
+
 
 
 
@@ -119,7 +127,7 @@ lines :  line {$$ = $1;}  // just to read multiple lines
     | lines line {$$ = template("%s\n%s", $1, $2);} 
 ;
         
-line : var_decl_section | const_decl_section | function_declaration
+line : var_decl_section | const_decl_section | function_declaration 
  ;
         
 // program : var_decl_section const_decl_section func_decl_section {};
@@ -129,16 +137,31 @@ function_declaration : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data
 parameters : expr_or_string { $$ = template("%s",$1);}
            | parameters COMMA expr_or_string { $$ = template("%s,%s",$1, $3);};
            
-function_body : INT { $$ = template("10");}  // test, for the moment. TODO: fix it and add an actual body
-
-//statements : // all the statements(one line only!)
-             // for, while,if(all revursive), assignment_line, function_call,break,continue
+function_body :  var_decl_section const_decl_section statement {$$ = template("%s\n%s\n%s", $1,$2,$3);};
 
 
+statements : statements statement {$$ = template("%s \n%s",$1,$2);}
+            | statement { $$ = $1; };  // TODO: remove + 4 conflicts(of 6)
+
+statement :  assignment_line {$$ = template("%s;",$1);} 
+             | if_stmt {$$ = template("%s;",$1);} 
+             | return_line {$$ = template("%s;",$1);}
+             |function_call SEMIC {$$ = template("%s;",$1);}
+             // for, while, function_call,break,continue
 
 
 
+if_stmt : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY else_stmt {$$ = template("if (%s){ \n %s \n}\n%s",$3,$6,$8);}
+        | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("if (%s){ \n %s \n}",$3,$6); }
 
+else_stmt : // ELSE if_stmt  {$$ = template("else %s", $2);};
+            ELSE statements {$$ = template("else \n %s", $2);};
+            | ELSE LEFT_CURLY statements RIGHT_CURLY {$$ = template("else \n{%s\n}", $3);};
+            //| %empty {$$=template("");};  // else is not mandatory 
+
+
+// a line where an assignment takes place
+assignment_line : ID ASSIGN expr_or_string SEMIC {$$ = template("%s=%s", $1,$3 );};
 
 // single constant declaration grammar 
 const_decl : CONST list_of_assignments data_type SEMIC {$$ = template("const %s %s;", $3,$2);}
@@ -146,21 +169,26 @@ const_decl : CONST list_of_assignments data_type SEMIC {$$ = template("const %s 
 // multiple constant declaration grammar
 const_decl_section: const_decl const_decl_section {$$ = template("%s \n%s", $1,$2);} 
                 | const_decl { $$ = $1;} // TODO: make this optional
-                ;
+;
 
-
+// multiple variable declaration
 var_decl_section: var_decl var_decl_section {$$ = template("%s \n%s", $1,$2);} 
                 | var_decl { $$ = $1;}  // TODO: make this optional
-                ;
+;
 
 var_decl : VAR list_of_assignments data_type SEMIC {$$ = template("%s %s;", $3,$2);};  // TODO remove this scenario!!!!
+
+return_line : RETURN expr_or_string SEMIC{$$=template("return %s;",$2);}
+               //| %empty {$$=template("");}
+;
 
 list_of_assignments: ID ASSIGN  expr_or_string {$$ = template("%s=%s",$1,$3);}
                     | ID ASSIGN  expr_or_string COMMA list_of_assignments {$$ = template("%s=%s, %s",$1,$3,$5);}
                     |ID COMMA list_of_assignments {$$=template("%s,%s",$1,$3);}
                     |ID {$$=template("%s",$1);};
                     
-expr_or_string: expression | STR ;  // we want to assign either an expression, or a string.
+expr_or_string: expression 
+                | STR ;  // we want to assign either an expression, or a string.
 
 data_type:  // int-->int , real --> double, string-->char*, bool--> int(0 or 1) etc
     INT_TYPE  { $$ =template("int");} 
@@ -168,15 +196,14 @@ data_type:  // int-->int , real --> double, string-->char*, bool--> int(0 or 1) 
     | BOOL { $$ = template("bool");} 
     | STR_TYPE { $$ = template("char*");} 
     | array_type { $$ = $1;} 
+;
   
 array_type : array_call data_type {$$ = template("%s %s",$2, $1);}
            | LEFT_BRACKET RIGHT_BRACKET data_type {$$ = template("%s*",$3);}
 ;
 
-
 expression : INT { $$ = $1;}  // print as is
 	   | REAL // the default action is $$=$1
-	   | LEFT_PARENTESIS expression RIGHT_PARENTHESIS { $$ = template("(%s)",$2);}
        | expression PLUS expression { $$ = template("%s + %s", $1, $3);}
        | expression MINUS expression { $$ = template("%s - %s", $1, $3);}
        | expression STAR expression { $$ = template("%s * %s", $1, $3);}
@@ -199,15 +226,18 @@ expression : INT { $$ = $1;}  // print as is
        | function_call {$$ = $1;} 
        | array_call {$$ = $1;}  // array call
        | ID {$$ = $1 ;}  // variables inside expressions. Important! after the array rule!.
- ;
+;
 
 function_call : ID LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS
                 {$$ = template("%s(%s)",$1,$3);};
 
 list_of_arguments : expr_or_string {$$ = template("%s",$1);}
-                    | list_of_arguments COMMA expr_or_string {$$ = template("%s,%s",$1,$3);};
+                    | list_of_arguments COMMA expr_or_string {$$ = template("%s,%s",$1,$3);}
+;
                     
-array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1, $3);};
+array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1, $3);}
+;
+// you little ** if you are copying this from https://github.com/arelli, dont.
 %%
 void main() {
 	if (yyparse() != 0)
