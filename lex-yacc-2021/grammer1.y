@@ -81,6 +81,7 @@
 //%right RIGHT_BRACKET
 %right RIGHT_PARENTHESIS
 
+
 %type <str> expression
 %type <str> function_call
 %type <str> array_call
@@ -91,27 +92,51 @@
 %type <str> data_type
 %type <str> expr_or_string
 %type <str> var_decl_section
+%type <str> lines
+%type <str> line
+%type <str> const_decl
+%type <str> const_decl_section
 
-
-%start start_of_program
+%start lines
 
 
 
 %%  // the beginning of the rules section
-
-start_of_program : var_decl_section{ 
-  if (yyerror_count == 0) {
-    // include the pilib.h file
-    puts(c_prologue); 
-    puts("#include<math.h>");  //include it for the pow() function
-    printf("/* program */ \n\n");
-    printf("%s\n", $1);  // this is needed(at the top of the recursion tree) to produce code.
-  }
+lines :  line { $$ = $1;}
+    //lines line { $$ = $2;}
+;
+        
+line : var_decl_section { 
+      if (yyerror_count == 0) {
+        // include the pilib.h file
+        puts(c_prologue); 
+        puts("#include<math.h>");  //include it for the pow() function
+        printf("/* program */ \n\n");
+        printf("%s\n", $1);  // this is needed(at the top of the recursion tree) to produce code.
+      }
 }
-/*rules */
+      | const_decl_section { 
+      if (yyerror_count == 0) {
+        // include the pilib.h file
+        puts(c_prologue); 
+        puts("#include<math.h>");  //include it for the pow() function
+        printf("/* program */ \n\n");
+        printf("%s\n", $1);  // this is needed(at the top of the recursion tree) to produce code.
+      }
+} ;
+
+
+const_decl : CONST ID ASSIGN  expr_or_string data_type SEMIC {$$ = template("const %s %s =  %s", $5,$2,$4);}
+
+const_decl_section: const_decl const_decl_section { $$ = $1;} 
+                | const_decl { $$ = $1;} // OPTIONAL and NOT_OPT..
+                //| %empty {$$="";}   //TODO: fix 1 conflict from here.(1state 13)
+                ;
+
+
 var_decl_section: var_decl var_decl_section { $$ = $1;} 
                 | var_decl { $$ = $1;} // OPTIONAL and NOT_OPT..
-                | %empty {$$="";}   //TODO: fix 1 conflict from here.(1state 13)
+                //| %empty {$$="";}   //TODO: fix 1 conflict from here.(1state 13)
                 ;
 
 var_decl : VAR list_of_assignments data_type SEMIC {$$ = template("%s %s;", $3,$2);};  // TODO remove this scenario!!!!
@@ -121,10 +146,9 @@ list_of_assignments: ID ASSIGN  expr_or_string {$$ = template("%s=%s",$1,$3);}
                     |ID COMMA list_of_assignments {$$=template("%s,%s",$1,$3);}
                     |ID {$$=template("%s",$1);};
                     
-expr_or_string: expression 
-                | STR ;  // we want to assign either an expression, or a string.
+expr_or_string: expression | STR ;  // we want to assign either an expression, or a string.
 
-data_type:  // int-->int , real --> double, string-->char*, bool--> int(0 or 1) etcmu
+data_type:  // int-->int , real --> double, string-->char*, bool--> int(0 or 1) etc
     INT_TYPE  { $$ =template("int");} 
     | REAL_TYPE { $$ =template("double");} 
     | BOOL { $$ = template("bool");} 
@@ -172,8 +196,6 @@ list_of_arguments : expression {$$ = template("%s",$1);}
 array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1, $3);};
 %%
 void main() {
-	if (yyparse() == 0)
-		printf("Input OK.\n");
-	else
+	if (yyparse() != 0)
 		printf("Invalid input.\n");
 	}
