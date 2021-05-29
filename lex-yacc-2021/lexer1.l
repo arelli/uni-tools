@@ -5,6 +5,7 @@
 #include "grammer.tab.h"
 #include "cgen.h"
 
+
 int line_num = 0;
 %}
 
@@ -21,7 +22,7 @@ STR \"[^\"\n]*\"
 
 %%
 
-"=" {printf("token EQUALS : %s\n", yytext); return ASSIGN;}
+"=" {printf("token ASSIGN : %s\n", yytext); return ASSIGN;}
 
 "int" {printf("token INT_TYPE: %s\n", yytext);return INT_TYPE;}
 "real" {printf("token REAL_TYPE: %s\n", yytext);return REAL_TYPE;}
@@ -65,7 +66,7 @@ STR \"[^\"\n]*\"
 ">" {printf("token GREATER_THAN: %s\n", yytext);return GREATER_THAN;}
 ">=" {printf("token GREATER_OR_EQUALS: %s\n", yytext);return GREATER_OR_EQUALS;}
 
-";" {printf("token COLON: %s\n", yytext);return COLON;}
+";" {printf("token SEMIC: %s\n", yytext);return SEMIC;}
 "(" {printf("token LEFT_PARENTESIS: %s\n", yytext);return LEFT_PARENTESIS;}
 ")" {printf("token RIGHT_PARENTHESIS: %s\n", yytext);return RIGHT_PARENTHESIS;}
 "[" {printf("token LEFT_BRACKET: %s\n", yytext);return LEFT_BRACKET;}
