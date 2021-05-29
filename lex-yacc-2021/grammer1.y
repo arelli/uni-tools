@@ -41,10 +41,10 @@
 %token NOT 
 %token RETURN 
 %token KW_BEGIN 
-//%token PLUS 
-//%token MINUS 
-//%token STAR 
-//%token SLASH 
+%token PLUS 
+%token MINUS 
+%token STAR 
+%token SLASH 
 %token PERCENT 
 %token DOUBLE_STAR 
 %token LOGIC_EQUALS 
@@ -75,7 +75,10 @@
 %right DOUBLE_STAR
 %left LOGIC_NOT
 %left LEFT_PARENTESIS
+//%left LEFT_BRACKET
+//%right RIGHT_BRACKET
 %right RIGHT_PARENTHESIS
+
 
 %type <str> expression
 %type <str> function_call
@@ -118,10 +121,12 @@ expression : INT { $$ = $1;}  // print as is
        | LOGIC_NOT expression { $$ = template("!%s", $2);}
        | PLUS expression { $$ = template("%s", $2);}
        | MINUS expression { $$ = template("(-1)*%s", $2);}
-       | ID { $$ = $1 ;}  // to be able to give complex values to variables
        | FALSE              {$$ = template("0");}
        | TRUE               {$$ = template("1");}    
        | function_call  { $$ = $1;} 
+       | ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1, $3);}  // array call
+       | ID { $$ = $1 ;}  // variables inside expressions. Important! after the array rule!.
+       
  ;
 
 function_call : ID LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS
@@ -129,7 +134,6 @@ function_call : ID LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS
 
 list_of_arguments : expression {$$ = template("%s",$1);}
                     | list_of_arguments COMMA expression {$$ = template("%s,%s",$1,$3);};
-
 %%
 void main() {
 	if (yyparse() == 0)
