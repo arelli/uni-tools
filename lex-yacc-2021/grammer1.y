@@ -42,11 +42,11 @@
 %type <str> expr_or_string var_decl_section lines line const_decl const_decl_section prologue function_decl parameters
 %type <str> function_body  statement return_line assignment assignment_line if_stmt else_stmt statements for_loop while_loop
 %type <str> function_decl_section read_string read_int read_real write_string write_int write_real
-%type <str> special_functions_read special_functions_write  func_begin begin_body
+%type <str> special_functions_read special_functions_write  func_begin
 %type <str> line1  line2  line3  line4  line5  line6 line7  line8
 %start prologue
-
-%left  LIN1
+// these are here to define priorities in the line type! must be here to avoid conflicts.
+%left  LIN1  // we want lin1 to have lower priority from lin2 etc....
 %left LIN2
 %left LIN3
 %left  LIN4
@@ -71,27 +71,24 @@ lines :  line {$$ = $1;}  // just to read multiple lines
     | lines line {$$ = template("%s\n%s", $1, $2);} 
 ;
 
-// line : var_decl_section | const_decl_section|  function_decl_section|  func_begin
-        
+// this is the parent of    
 line :  line8 %prec LIN8 | line1 %prec LIN1 | line2 %prec LIN2 | line3 %prec LIN3 | line4 %prec LIN4  
     | line5 %prec LIN5 | line6 %prec LIN6| line7 %prec LIN7
  ;
  // the below "table" implements the "optional" features of the code.
-line8 : var_decl_section  const_decl_section  function_decl_section  func_begin {$$ = template("%s\n%s\n%s\n %s",$1, $2, $3,$4);};
+line8 : const_decl_section var_decl_section  function_decl_section  func_begin {$$ = template("%s\n%s\n%s\n %s",$1, $2, $3,$4);};
 line1 : const_decl_section  function_decl_section  func_begin {$$ = template("%s\n%s\n%s",$1, $2, $3);};
 line2 : var_decl_section  function_decl_section  func_begin {$$ = template("%s\n%s\n%s",$1, $2, $3);};
-line3 : var_decl_section  const_decl_section  func_begin {$$ = template("%s\n%s\n%s",$1, $2, $3);};
+line3 : const_decl_section var_decl_section func_begin {$$ = template("%s\n%s\n%s",$1, $2, $3);};
 line4 : function_decl_section  func_begin {$$ = template("%s\n%s",$1, $2);};
-line5 : var_decl_section   func_begin{$$ = template("%s\n%s",$1, $2);};
+line5 : var_decl_section   func_begin {$$ = template("%s\n%s",$1, $2);};
 line6 : const_decl_section  func_begin {$$ = template("%s\n%s",$1, $2);};
-line7 : func_begin 
+line7 : func_begin ;
 
 
 // here the FUNC kewyord is removed from the expression because it doesnt let the begin function to be recognized. TODO: fix it!.       
-func_begin : FUNC KW_BEGIN LEFT_PARENTESIS RIGHT_PARENTHESIS LEFT_CURLY begin_body RIGHT_CURLY {$$ = template("void main(){\n%s\n}", $6);}
+func_begin : FUNC KW_BEGIN LEFT_PARENTESIS RIGHT_PARENTHESIS LEFT_CURLY function_body RIGHT_CURLY {$$ = template("void main(){\n%s\n}", $6);}
 ;
-
-begin_body : function_body //var_decl_section const_decl_section statements {$$=template("%s\n%s\n%s;" ,$1,$2,$3);}
 
 // TODO remove 1 connflict!
 function_decl_section : function_decl  | function_decl_section function_decl {$$ = template("%s\n%s", $1, $2);} 
