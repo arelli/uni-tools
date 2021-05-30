@@ -150,8 +150,11 @@ statements : statements statement {$$ = template("%s \n%s",$1,$2);}
 statement : assignment_line {$$ = template("%s;",$1);} 
              | if_stmt {$$ = template("%s;",$1);} 
              | return_line {$$ = template("%s;",$1);}
-             | function_call SEMIC {$$ = template("%s;",$1);}
-             // for, while,break(+1 conflict),continue(+1 conflict)
+             | function_call SEMIC {$$ = template("%s;",$1);}  // TODO: doesnt recognize func_calls!(????) fix it
+             | BREAK SEMIC {$$ = template("break;");};  // TODO remove 1 conflict from here!!!
+             | CONTINUE SEMIC {$$ = template("continue;");}; // TODO remove 1 conflict from here!!!
+             // for, while
+             
 //for_loop: FOR
 
 // TODO: maybe instead of statements, we can use the function body.
@@ -159,8 +162,7 @@ if_stmt : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements 
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("if (%s){ \n %s \n}",$3,$6); }
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("if (%s) \n %s ",$3,$5); }  // for single command if.
 
-else_stmt : // ELSE if_stmt  {$$ = template("else %s", $2);}; //TODO: fix the recursion here. spits compile-time error.
-            ELSE statements {$$ = template("else \n %s", $2);};
+else_stmt : ELSE statements {$$ = template("else \n %s", $2);};  // TODO: add support for ELSE IF!!!
             | ELSE LEFT_CURLY statements RIGHT_CURLY {$$ = template("else \n{%s\n}", $3);};
 
 
