@@ -75,6 +75,13 @@ STR \"[^\"\n]*\"
 "{" {return LEFT_CURLY;}
 "}" {return RIGHT_CURLY;}
 
+"readString"            {return READ_STRING; }  /* Functions */
+"readInt"               {return READ_INT; }
+"readReal"              {return READ_REAL; }
+"writeString"           {return WRITE_STRING; }
+"writeInt"              {return WRITE_INT; }
+"writeReal"             {return WRITE_REAL; }
+
  /* " " {return WHITESPACE;} */
 
  /* these have to be after the above rules! */
