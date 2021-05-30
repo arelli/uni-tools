@@ -108,6 +108,7 @@
 %type <str> else_stmt
 %type <str> statements
 //%type <str> for_loop
+%type <str> while_loop
 
 %start prologue
 
@@ -138,7 +139,7 @@ function_declaration : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data
 {$$ = template("%s %s(%s){\n%s\n}",$6, $2, $4,$8);};
 
 parameters : expr_or_string { $$ = template("%s",$1);}
-           | parameters COMMA expr_or_string { $$ = template("%s,%s",$1, $3);};
+           | parameters COMMA expr_or_string {$$ = template("%s,%s",$1, $3);};
            
 // TODO: mke var and const decl section OPTIONAL! (and also statements optional!)
 function_body :  var_decl_section  const_decl_section  statements {$$ = template("%s\n%s\n%s", $1,$2,$3);};
@@ -153,10 +154,15 @@ statement : assignment_line {$$ = template("%s;",$1);}
              | function_call SEMIC {$$ = template("%s;",$1);}  // TODO: doesnt recognize func_calls!(????) fix it
              | BREAK SEMIC {$$ = template("break;");};  // TODO remove 1 conflict from here!!!
              | CONTINUE SEMIC {$$ = template("continue;");}; // TODO remove 1 conflict from here!!!
+             | while_loop 
+             ;
              // for, while
              
 //for_loop: FOR
 
+while_loop : WHILE LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("while (%s){ \n %s \n}",$3,$6);}
+            | WHILE LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("while (%s)\n%s",$3,$5);}  // TODO: remove 1 conflict.
+            ;
 // TODO: maybe instead of statements, we can use the function body.
 if_stmt : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY else_stmt {$$ = template("if (%s){ \n %s \n}\n%s",$3,$6,$8);}
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("if (%s){ \n %s \n}",$3,$6); }
