@@ -13,7 +13,6 @@
     int num;
     
 }
-
 /* tokens */
 %token <str> ID   //this needs to have the <str> !
 %token <str> INT    //this needs to have the <str> !
@@ -23,52 +22,10 @@
 %token INT_TYPE 
 %token REAL_TYPE // the rest of the tokens, do not need a defined type 
 %token STR_TYPE   // because thew dont cary any variable info, only their "name"
-%token BOOL 
-%token TRUE 
-%token FALSE 
-%token VAR 
-%token CONST 
-%token IF 
-%token ELSE 
-%token FOR 
-%token WHILE 
-%token BREAK 
-%token CONTINUE 
-%token SEMIC
-%token FUNC 
-%token NIL 
-%token AND 
-%token OR 
-%token NOT 
-%token RETURN 
-%token KW_BEGIN 
-%token PLUS 
-%token MINUS 
-%token STAR 
-%token SLASH 
-%token PERCENT 
-%token DOUBLE_STAR 
-%token LOGIC_EQUALS 
-%token LOGIC_NOT_EQUALS 
-%token LESS_THAN 
-%token LESS_THAN_OR_EQUALS 
-%token GREATER_THAN 
-%token GREATER_OR_EQUALS 
-%token LOGIC_AND 
-%token LOGIC_OR 
-%token LOGIC_NOT
-%token LEFT_PARENTESIS 
-%token RIGHT_PARENTHESIS 
-%token COMMA 
-%token LEFT_BRACKET 
-%token RIGHT_BRACKET 
-%token LEFT_CURLY 
-%token RIGHT_CURLY 
-%token COMMENT 
-%token MULTI_LINE_COMMENT 
-
-
-
+%token BOOL TRUE FALSE 
+%token VAR CONST IF ELSE FOR WHILE BREAK CONTINUE SEMIC FUNC NIL AND OR NOT RETURN KW_BEGIN PLUS  MINUS STAR SLASH PERCENT 
+%token DOUBLE_STAR LOGIC_EQUALS LOGIC_NOT_EQUALS LESS_THAN LESS_THAN_OR_EQUALS GREATER_THAN  GREATER_OR_EQUALS LOGIC_AND  LOGIC_OR LOGIC_NOT
+%token LEFT_PARENTESIS RIGHT_PARENTHESIS COMMA LEFT_BRACKET RIGHT_BRACKET LEFT_CURLY RIGHT_CURLY COMMENTbMULTI_LINE_COMMENT 
 
 %left LOGIC_OR
 %left LOGIC_AND
@@ -82,34 +39,9 @@
 //%right RIGHT_BRACKET
 %right RIGHT_PARENTHESIS
 
-
-%type <str> expression
-%type <str> function_call
-%type <str> array_call
-%type <str> list_of_arguments
-%type <str> var_decl
-%type <str> list_of_assignments
-%type <str> array_type
-%type <str> data_type
-%type <str> expr_or_string
-%type <str> var_decl_section
-%type <str> lines
-%type <str> line
-%type <str> const_decl
-%type <str> const_decl_section
-%type <str> prologue
-%type <str> function_declaration
-%type <str> parameters
-%type <str> function_body
-%type <str> statement
-%type <str> return_line
-%type <str> assignment
-%type <str> assignment_line
-%type <str> if_stmt
-%type <str> else_stmt
-%type <str> statements
-%type <str> for_loop
-%type <str> while_loop
+%type <str> expression function_call  array_call list_of_arguments var_decl list_of_assignments array_type data_type
+%type <str> expr_or_string var_decl_section lines line const_decl const_decl_section prologue function_declaration parameters
+%type <str> function_body  statement return_line assignment assignment_line if_stmt else_stmt statements for_loop while_loop
 
 %start prologue
 
@@ -158,27 +90,30 @@ statement : assignment_line {$$ = template("%s;",$1);}
              | while_loop 
              | for_loop
              ;
-             // for, while
+
 // working for loop transpiler, TODO: remove 1 conflict.             
 for_loop: FOR LEFT_PARENTESIS assignment SEMIC expression SEMIC assignment RIGHT_PARENTHESIS statement {$$=template("for (%s;%s;%s)\n%s", $3, $5, $7, $9);}
             | FOR LEFT_PARENTESIS assignment SEMIC expression SEMIC assignment RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY
             {$$=template("for (%s;%s;%s){\n%s\n}",$3, $5, $7, $10);};
-
+//TODO add brackets in the statements!
 while_loop : WHILE LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("while (%s){ \n %s \n}",$3,$6);}
             | WHILE LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("while (%s)\n%s",$3,$5);}  // TODO: remove 1 conflict.
             ;
+            
 // TODO: maybe instead of statements, we can use the function body.
 if_stmt : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY else_stmt {$$ = template("if (%s){ \n %s \n}\n%s",$3,$6,$8);}
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("if (%s){ \n %s \n}",$3,$6); }
+        | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement else_stmt{$$ = template("if (%s) \n %s \n else \n%s",$3,$5,$6); }  // TODO: remove 2 conflicts.
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("if (%s) \n %s ",$3,$5); }  // for single command if.
 
 else_stmt : ELSE statements {$$ = template("else \n %s", $2);};  // TODO: add support for ELSE IF!!!
-            | ELSE LEFT_CURLY statements RIGHT_CURLY {$$ = template("else \n{%s\n}", $3);};
+            | ELSE LEFT_CURLY statements RIGHT_CURLY {$$ = template("else \n{\n%s\n}", $3);};
 
 
 // a line where an assignment takes place
 assignment_line : assignment SEMIC {$$ = template("%s;", $1);};
 
+// wee need an assignment without a SEMIC for use inside the for() loop
 assignment : ID ASSIGN expr_or_string {$$ = template("%s=%s", $1,$3);};
 
 // single constant declaration grammar 
