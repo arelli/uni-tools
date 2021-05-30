@@ -2,4 +2,33 @@ const message = "Hello World!\n" string;
  func begin() {
     writeString(message); 
     }
-/* My first pi program! */
+    
+    
+/* My second pi program! */
+
+func increment(i int) int {
+    i = i+1;
+    return i;
+}
+func begin() { 
+    var i = 0 int;
+    while (i<10) {  // demonstration of comments!
+        printf("the incremented number is:%d \n",i);
+        i = increment(i);
+    }
+    return;
+}
+
+/* My third pi program! */
+
+func begin() { 
+
+    var i = 0 int;
+    for(i=0; i<10; i=i+1){
+        if ((i**2)>20.0)
+            printf("larger than 20, %f \n",(i**2));
+        else 
+            printf("not larger than 20, %f\n",(i**2));
+        }
+    return;
+}
