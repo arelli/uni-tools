@@ -103,11 +103,12 @@
 %type <str> function_body
 %type <str> statement
 %type <str> return_line
+%type <str> assignment
 %type <str> assignment_line
 %type <str> if_stmt
 %type <str> else_stmt
 %type <str> statements
-//%type <str> for_loop
+%type <str> for_loop
 %type <str> while_loop
 
 %start prologue
@@ -155,10 +156,13 @@ statement : assignment_line {$$ = template("%s;",$1);}
              | BREAK SEMIC {$$ = template("break;");};  // TODO remove 1 conflict from here!!!
              | CONTINUE SEMIC {$$ = template("continue;");}; // TODO remove 1 conflict from here!!!
              | while_loop 
+             | for_loop
              ;
              // for, while
-             
-//for_loop: FOR
+// working for loop transpiler, TODO: remove 1 conflict.             
+for_loop: FOR LEFT_PARENTESIS assignment SEMIC expression SEMIC assignment RIGHT_PARENTHESIS statement {$$=template("for (%s;%s;%s)\n%s", $3, $5, $7, $9);}
+            | FOR LEFT_PARENTESIS assignment SEMIC expression SEMIC assignment RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY
+            {$$=template("for (%s;%s;%s){\n%s\n}",$3, $5, $7, $10);};
 
 while_loop : WHILE LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("while (%s){ \n %s \n}",$3,$6);}
             | WHILE LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("while (%s)\n%s",$3,$5);}  // TODO: remove 1 conflict.
@@ -173,7 +177,9 @@ else_stmt : ELSE statements {$$ = template("else \n %s", $2);};  // TODO: add su
 
 
 // a line where an assignment takes place
-assignment_line : ID ASSIGN expr_or_string SEMIC {$$ = template("%s=%s", $1,$3 );};
+assignment_line : assignment SEMIC {$$ = template("%s;", $1);};
+
+assignment : ID ASSIGN expr_or_string {$$ = template("%s=%s", $1,$3);};
 
 // single constant declaration grammar 
 const_decl : CONST list_of_assignments data_type SEMIC {$$ = template("const %s %s;", $3,$2);}
