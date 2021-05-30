@@ -57,12 +57,12 @@ prologue : lines {        // the print is at the top of the recursion tree! impo
         }
     };
 
+
 lines :  line {$$ = $1;}  // just to read multiple lines
-    | lines line {$$ = template("%s\n%s", $1, $2);} 
+    | lines line {$$ = template("%s\n%s", $1, $2);}   // TODO: find out why 3 conflicts are being caused from this line.
 ;
         
-line : var_decl_section | const_decl_section | function_decl_section | func_begin
- ;
+line : var_decl_section | const_decl_section | function_decl_section | func_begin ;
         
 func_begin : FUNC KW_BEGIN LEFT_PARENTESIS RIGHT_PARENTHESIS LEFT_CURLY begin_body RIGHT_CURLY
 {$$ = template("void main(){\n%s\n}", $6);}
@@ -80,20 +80,21 @@ function_decl : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data_type L
 
 parameters : expr_or_string { $$ = template("%s",$1);}
            | parameters COMMA expr_or_string {$$ = template("%s,%s",$1, $3);};
+           | %empty {$$="";}
            
 // TODO: mke var and const decl section OPTIONAL! (and also statements optional!)
 function_body :  var_decl_section  const_decl_section  statements {$$ = template("%s\n%s\n%s", $1,$2,$3);};
 
-
+// removed all conflicts due to plural of statement!(may be in its components though still)
 statements : statements statement {$$ = template("%s \n%s",$1,$2);}
-             |statement { $$ = $1; };  // TODO: remove + 4 conflicts(of 6)
+             |statement { $$ = $1; };  
 
 statement : assignment_line {$$ = template("%s;",$1);} 
              | if_stmt {$$ = template("%s;",$1);} 
              | return_line {$$ = template("%s;",$1);}
              | function_call SEMIC {$$ = template("%s;",$1);}  // TODO: doesnt recognize func_calls!(????) fix it
-             | BREAK SEMIC {$$ = template("break;");};  // TODO remove 1 conflict from here!!!
-             | CONTINUE SEMIC {$$ = template("continue;");}; // TODO remove 1 conflict from here!!!
+             | BREAK SEMIC {$$ = template("break;");};  
+             | CONTINUE SEMIC {$$ = template("continue;");}; 
              | while_loop | for_loop
              | special_functions_read | special_functions_write
              ;
@@ -129,18 +130,21 @@ const_decl : CONST list_of_assignments data_type SEMIC {$$ = template("const %s 
 // multiple constant declaration grammar
 const_decl_section: const_decl const_decl_section {$$ = template("%s \n%s", $1,$2);} 
                 | const_decl { $$ = $1;} // TODO: make this optional
+                //| %empty {$$=template("");}
 ;
 
 // multiple variable declaration
 var_decl_section: var_decl var_decl_section {$$ = template("%s \n%s", $1,$2);} 
                 | var_decl { $$ = $1;}  // TODO: make this optional
+                //| %empty {$$=template("");}
 ;
 
 var_decl : VAR list_of_assignments data_type SEMIC {$$ = template("%s %s;", $3,$2);};  // TODO remove this scenario!!!!
+           //| %empty {$$=template("");}   // +~20 conflicts
 
 return_line : RETURN expr_or_string SEMIC{$$=template("return %s",$2);}
             | RETURN SEMIC{$$=template("return");}
-               //| %empty {$$=template("");}
+            //| %empty {$$=template("");}  // adds 218 conflicts :) 
 ;
 
 list_of_assignments: ID ASSIGN  expr_or_string {$$ = template("%s=%s",$1,$3);}
@@ -200,7 +204,7 @@ array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1
 ;
 
 
-// special function calls(+6 conflicts!!!)
+// special function calls
 
 read_string: READ_STRING LEFT_PARENTESIS RIGHT_PARENTHESIS SEMIC { $$ = template("readString();"); }
 ;
@@ -224,7 +228,6 @@ write_real : WRITE_REAL LEFT_PARENTESIS ID RIGHT_PARENTHESIS SEMIC { $$ = templa
        | WRITE_REAL LEFT_PARENTESIS REAL RIGHT_PARENTHESIS SEMIC { $$ = template("writeReal(%s);", $3); }
 ;
 
-//
 special_functions_read: read_int | read_real | read_string ;
 special_functions_write :  write_int | write_real | write_string;
 
