@@ -22,10 +22,10 @@
 %token INT_TYPE 
 %token REAL_TYPE // the rest of the tokens, do not need a defined type 
 %token STR_TYPE   // because thew dont cary any variable info, only their "name"
-%token BOOL TRUE FALSE 
-%token VAR CONST IF ELSE FOR WHILE BREAK CONTINUE SEMIC FUNC NIL AND OR NOT RETURN KW_BEGIN PLUS  MINUS STAR SLASH PERCENT 
+%token BOOL TRUE FALSE WRITE_REAL WRITE_INT WRITE_STRING READ_REAL READ_INT READ_STRING
+%token VAR CONST IF ELSE FOR WHILE BREAK CONTINUE SEMIC FUNC NIL RETURN KW_BEGIN PLUS  MINUS STAR SLASH PERCENT 
 %token DOUBLE_STAR LOGIC_EQUALS LOGIC_NOT_EQUALS LESS_THAN LESS_THAN_OR_EQUALS GREATER_THAN  GREATER_OR_EQUALS LOGIC_AND  LOGIC_OR LOGIC_NOT
-%token LEFT_PARENTESIS RIGHT_PARENTHESIS COMMA LEFT_BRACKET RIGHT_BRACKET LEFT_CURLY RIGHT_CURLY COMMENTbMULTI_LINE_COMMENT 
+%token LEFT_PARENTESIS RIGHT_PARENTHESIS COMMA LEFT_BRACKET RIGHT_BRACKET LEFT_CURLY RIGHT_CURLY COMMENT MULTI_LINE_COMMENT 
 
 %left LOGIC_OR
 %left LOGIC_AND
@@ -42,18 +42,18 @@
 %type <str> expression function_call  array_call list_of_arguments var_decl list_of_assignments array_type data_type
 %type <str> expr_or_string var_decl_section lines line const_decl const_decl_section prologue function_decl parameters
 %type <str> function_body  statement return_line assignment assignment_line if_stmt else_stmt statements for_loop while_loop
-%type <str> function_decl_section func_begin begin_body 
+%type <str> function_decl_section func_begin begin_body read_string read_int read_real write_string write_int write_real
 
 %start prologue
 
-
+//%glr-parser  https://stackoverflow.com/questions/39781557/bison-cant-solve-conflicts-shift-reduce-and-reduce-reduce
 
 
 %%  // the beginning of the rules section
 prologue : lines {        // the print is at the top of the recursion tree! important.
         puts("#include<pilib.h>"); 
         puts("#include<math.h>");  //include it for the pow() function
-        printf("/* program */ \n\n");
+        printf("/* transcribed pi program*/ \n\n");
         if (yyerror_count == 0) {
             printf("%s\n", $1);  // this is needed(at the top of the recursion tree) to produce code.
         }
@@ -71,7 +71,7 @@ func_begin : FUNC KW_BEGIN LEFT_PARENTESIS RIGHT_PARENTHESIS LEFT_CURLY begin_bo
 ;
 
 begin_body : const_decl_section var_decl_section statements return_line
-{$$=template("%s \n %s \n %s\n %s" ,$1,$2,$3, $3);}
+{$$=template("%s \n %s \n %s\n %s;" ,$1,$2,$3, $4);}
 
 // TODO remove 1 connflict!
 function_decl_section : function_decl 
@@ -98,6 +98,7 @@ statement : assignment_line {$$ = template("%s;",$1);}
              | CONTINUE SEMIC {$$ = template("continue;");}; // TODO remove 1 conflict from here!!!
              | while_loop 
              | for_loop
+             | read_int | read_real | read_string | write_int | write_real | write_string
              ;
 
 // working for loop transpiler, TODO: remove 1 conflict.             
@@ -200,6 +201,34 @@ list_of_arguments : expr_or_string {$$ = template("%s",$1);}
                     
 array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1, $3);}
 ;
+
+
+// special function calls(+6 conflicts!!!)
+
+read_string: READ_STRING LEFT_PARENTESIS RIGHT_PARENTHESIS { $$ = template("readString();"); }
+;
+
+read_int: READ_INT LEFT_PARENTESIS RIGHT_PARENTHESIS { $$ = template("readInt();"); }
+;
+
+read_real: READ_REAL LEFT_PARENTESIS RIGHT_PARENTHESIS { $$ = template("readReal();"); }
+;
+
+write_string : WRITE_STRING LEFT_PARENTESIS ID RIGHT_PARENTHESIS SEMIC { $$ = template("writeString(%s);", $3); }
+       | WRITE_STRING LEFT_PARENTESIS STR RIGHT_PARENTHESIS SEMIC { $$ = template("writeString(%s);", $3); }
+;
+
+write_int : WRITE_INT LEFT_PARENTESIS ID RIGHT_PARENTHESIS SEMIC { $$ = template("writeInt(%s);", $3); }
+       | WRITE_INT LEFT_PARENTESIS INT RIGHT_PARENTHESIS SEMIC     { $$ = template("writeInt(%s);", $3); }
+;
+
+write_real : WRITE_REAL LEFT_PARENTESIS ID RIGHT_PARENTHESIS SEMIC { $$ = template("writeReal(%s);", $3); }
+       | WRITE_REAL LEFT_PARENTESIS REAL RIGHT_PARENTHESIS SEMIC { $$ = template("writeReal(%s);", $3); }
+;
+
+
+
+
 
 %%
 void main() {
