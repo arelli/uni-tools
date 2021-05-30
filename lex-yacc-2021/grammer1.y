@@ -43,9 +43,10 @@
 %type <str> function_body  statement return_line assignment assignment_line if_stmt else_stmt statements for_loop while_loop
 %type <str> function_decl_section read_string read_int read_real write_string write_int write_real
 %type <str> special_functions_read special_functions_write  func_begin
-%type <str> line1  line2  line3  line4  line5  line6 line7  line8
+%type <str> line1  line2  line3  line4  line5  line6 line7  line8  //priorities of body types
+%type <str> function_body1 function_body2 function_body3 function_body4
 %start prologue
-// these are here to define priorities in the line type! must be here to avoid conflicts.
+// these are here to define priorities in the line type! mufunction_body2st be here to avoid conflicts.
 %left  LIN1  // we want lin1 to have lower priority from lin2 etc....
 %left LIN2
 %left LIN3
@@ -54,6 +55,11 @@
 %left  LIN6
 %left  LIN7
 %left LIN8
+
+%left FUNC4
+%left FUNC3
+%left FUNC2
+%left FUNC1
 
 //%glr-parser  https://stackoverflow.com/questions/39781557/bison-cant-solve-conflicts-shift-reduce-and-reduce-reduce
 
@@ -101,7 +107,14 @@ parameters : expr_or_string data_type{ $$ = template("%s %s",$2, $1);}
            | %empty {$$="";}
            
 // TODO: mke var and const decl section OPTIONAL! (and also statements optional!)
-function_body :  var_decl_section  const_decl_section  statements {$$ = template("%s\n%s\n%s", $1,$2,$3);};
+function_body :  function_body1 %prec FUNC1 | function_body2 %prec FUNC2 | function_body3 %prec FUNC3
+            | function_body4 %prec FUNC4
+
+// Implementation of "optional" features inside functions.(and their hierarchy)
+function_body1 :  var_decl_section  const_decl_section  statements {$$ = template("%s\n%s\n%s", $1,$2,$3);};
+function_body2 :  var_decl_section  statements {$$ = template("%s\n%s", $1,$2);};
+function_body3 :  const_decl_section  statements {$$ = template("%s\n%s", $1,$2);};
+function_body4 :  statements // only the statements are mandatory.
 
 
 statements : statements statement {$$ = template("%s \n%s",$1,$2);}
@@ -110,9 +123,9 @@ statements : statements statement {$$ = template("%s \n%s",$1,$2);}
 statement : assignment_line {$$ = template("%s;",$1);} 
              | if_stmt {$$ = template("%s;",$1);} 
              | return_line {$$ = template("%s;",$1);}
-             | function_call SEMIC {$$ = template("%s;",$1);}  // TODO: doesnt recognize func_calls!(????) fix it
-             | BREAK SEMIC {$$ = template("break;");};  // TODO remove 1 conflict from here!!!
-             | CONTINUE SEMIC {$$ = template("continue;");}; // TODO remove 1 conflict from here!!!
+             | function_call SEMIC {$$ = template("%s;",$1);} 
+             | BREAK SEMIC {$$ = template("break;");};  
+             | CONTINUE SEMIC {$$ = template("continue;");}; 
              | while_loop | for_loop
              | special_functions_read | special_functions_write
              ;
@@ -132,7 +145,7 @@ if_stmt : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements 
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement else_stmt{$$ = template("if (%s) \n %s \n else \n%s",$3,$5,$6); }  // TODO: remove 2 conflicts.
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("if (%s) \n %s ",$3,$5); }  // for single command if.
 
-else_stmt : ELSE statement {$$ = template("else \n %s", $2);};  // TODO: add support for ELSE IF!!!
+else_stmt : ELSE statement {$$ = template("else \n %s", $2);}; 
             | ELSE LEFT_CURLY statements RIGHT_CURLY {$$ = template("else \n{\n%s\n}", $3);};
 
 
