@@ -61,13 +61,12 @@
 %left FUNC2
 %left FUNC1
 
-
 //%glr-parser  https://stackoverflow.com/questions/39781557/bison-cant-solve-conflicts-shift-reduce-and-reduce-reduce
 
 %%  // the beginning of the rules section
 prologue : lines{        // the print is at the top of the recursion tree! important.
         puts("#include \"pilib.h\" "); 
-        puts("#include<math.h>");  //include it for the pow() function
+        puts("#include <math.h>");  //include it for the pow() function
         printf("/* transcribed pi program*/ \n\n");
         if (yyerror_count == 0) {
             printf("%s\n", $1);  // this is needed(at the top of the recursion tree) to produce code.
@@ -237,13 +236,13 @@ array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1
 
 // special function calls(+6 conflicts!!!)
 
-read_string: READ_STRING LEFT_PARENTESIS RIGHT_PARENTHESIS SEMIC { $$ = template("readString();"); }
+read_string: READ_STRING LEFT_PARENTESIS RIGHT_PARENTHESIS  { $$ = template("readString()"); }
 ;
 
-read_int: READ_INT LEFT_PARENTESIS RIGHT_PARENTHESIS SEMIC { $$ = template("readInt();"); }
+read_int: READ_INT LEFT_PARENTESIS RIGHT_PARENTHESIS  { $$ = template("readInt()"); }
 ;
 
-read_real: READ_REAL LEFT_PARENTESIS RIGHT_PARENTHESIS SEMIC { $$ = template("readReal();"); }
+read_real: READ_REAL LEFT_PARENTESIS RIGHT_PARENTHESIS  { $$ = template("readReal()"); }
 ;
 
 write_string : WRITE_STRING LEFT_PARENTESIS ID RIGHT_PARENTHESIS SEMIC { $$ = template("writeString(%s);", $3); }
@@ -268,5 +267,5 @@ special_functions_write :  write_int | write_real | write_string;
 %%
 void main() {
 	if (yyparse() != 0)
-		printf("printf(\"Invalid Input!\");");
+		printf("//Invalid Input!");
 	}
