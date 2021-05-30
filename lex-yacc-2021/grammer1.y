@@ -107,6 +107,7 @@
 %type <str> if_stmt
 %type <str> else_stmt
 %type <str> statements
+//%type <str> for_loop
 
 %start prologue
 
@@ -131,33 +132,36 @@ line : var_decl_section | const_decl_section | function_declaration
  ;
         
 // program : var_decl_section const_decl_section func_decl_section {};
+
+
 function_declaration : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data_type LEFT_CURLY function_body RIGHT_CURLY
 {$$ = template("%s %s(%s){\n%s\n}",$6, $2, $4,$8);};
 
 parameters : expr_or_string { $$ = template("%s",$1);}
            | parameters COMMA expr_or_string { $$ = template("%s,%s",$1, $3);};
            
-function_body :  var_decl_section const_decl_section statement {$$ = template("%s\n%s\n%s", $1,$2,$3);};
+// TODO: mke var and const decl section OPTIONAL! (and also statements optional!)
+function_body :  var_decl_section  const_decl_section  statements {$$ = template("%s\n%s\n%s", $1,$2,$3);};
 
 
 statements : statements statement {$$ = template("%s \n%s",$1,$2);}
             | statement { $$ = $1; };  // TODO: remove + 4 conflicts(of 6)
 
-statement :  assignment_line {$$ = template("%s;",$1);} 
+statement : assignment_line {$$ = template("%s;",$1);} 
              | if_stmt {$$ = template("%s;",$1);} 
              | return_line {$$ = template("%s;",$1);}
-             |function_call SEMIC {$$ = template("%s;",$1);}
-             // for, while, function_call,break,continue
+             | function_call SEMIC {$$ = template("%s;",$1);}
+             // for, while,break(+1 conflict),continue(+1 conflict)
+//for_loop: FOR
 
-
-
+// TODO: maybe instead of statements, we can use the function body.
 if_stmt : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY else_stmt {$$ = template("if (%s){ \n %s \n}\n%s",$3,$6,$8);}
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("if (%s){ \n %s \n}",$3,$6); }
+        | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("if (%s) \n %s ",$3,$5); }  // for single command if.
 
-else_stmt : // ELSE if_stmt  {$$ = template("else %s", $2);};
+else_stmt : // ELSE if_stmt  {$$ = template("else %s", $2);}; //TODO: fix the recursion here. spits compile-time error.
             ELSE statements {$$ = template("else \n %s", $2);};
             | ELSE LEFT_CURLY statements RIGHT_CURLY {$$ = template("else \n{%s\n}", $3);};
-            //| %empty {$$=template("");};  // else is not mandatory 
 
 
 // a line where an assignment takes place
@@ -198,7 +202,7 @@ data_type:  // int-->int , real --> double, string-->char*, bool--> int(0 or 1) 
     | array_type { $$ = $1;} 
 ;
   
-array_type : array_call data_type {$$ = template("%s %s",$2, $1);}
+array_type : array_call data_type {$$ = template("%s %s",$2, $1);}  // TODO: doesnt accept this grammar, fix it.
            | LEFT_BRACKET RIGHT_BRACKET data_type {$$ = template("%s*",$3);}
 ;
 
@@ -237,7 +241,7 @@ list_of_arguments : expr_or_string {$$ = template("%s",$1);}
                     
 array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1, $3);}
 ;
-// you little ** if you are copying this from https://github.com/arelli, dont.
+
 %%
 void main() {
 	if (yyparse() != 0)
