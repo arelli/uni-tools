@@ -78,12 +78,12 @@ function_decl_section : function_decl
 function_decl : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data_type LEFT_CURLY function_body RIGHT_CURLY
 {$$ = template("%s %s(%s){\n%s\n}",$6, $2, $4,$8);};
 
-parameters : expr_or_string { $$ = template("%s",$1);}
-           | parameters COMMA expr_or_string {$$ = template("%s,%s",$1, $3);};
+parameters : expr_or_string data_type{ $$ = template("%s %s",$1, $2);}
+           | parameters COMMA expr_or_string data_type{$$ = template("%s,%s %s",$1, $3,$4);};
            | %empty {$$="";}
            
 // TODO: mke var and const decl section OPTIONAL! (and also statements optional!)
-function_body :  var_decl_section  const_decl_section  statements {$$ = template("%s\n%s\n%s", $1,$2,$3);};
+function_body :  var_decl_section | const_decl_section  | statements // {$$ = template("%s\n%s\n%s", $1,$2,$3);};
 
 // removed all conflicts due to plural of statement!(may be in its components though still)
 statements : statements statement {$$ = template("%s \n%s",$1,$2);}
@@ -169,6 +169,7 @@ array_type : array_call data_type {$$ = template("%s %s",$2, $1);}  // TODO: doe
 
 expression : INT { $$ = $1;}  // print as is
 	   | REAL // the default action is $$=$1
+       | LEFT_PARENTESIS expression RIGHT_PARENTHESIS { $$ = template("(%s)", $2);}
        | expression PLUS expression { $$ = template("%s + %s", $1, $3);}
        | expression MINUS expression { $$ = template("%s - %s", $1, $3);}
        | expression STAR expression { $$ = template("%s * %s", $1, $3);}
