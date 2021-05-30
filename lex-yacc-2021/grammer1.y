@@ -66,7 +66,7 @@
 
 %%  // the beginning of the rules section
 prologue : lines{        // the print is at the top of the recursion tree! important.
-        puts("#include<pilib.h>"); 
+        puts("#include \"pilib.h\" "); 
         puts("#include<math.h>");  //include it for the pow() function
         printf("/* transcribed pi program*/ \n\n");
         if (yyerror_count == 0) {
@@ -144,7 +144,7 @@ while_loop : WHILE LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY state
 // TODO: maybe instead of statements, we can use the function body.
 if_stmt : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY else_stmt{$$ = template("if (%s){ \n %s \n}\n%s",$3,$6,$8);}
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("if (%s){ \n %s \n}",$3,$6); }
-        | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement else_stmt {$$ = template("if (%s) \n %s \n else \n%s",$3,$5,$6); }  // TODO: remove 2 conflicts.
+        | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement else_stmt {$$ = template("if (%s) \n %s \n %s",$3,$5,$6); }  // TODO: remove 2 conflicts.
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("if (%s) \n %s ",$3,$5); }  // for single command if.
 // TODO: there is no implementation for if/else/if. Fix it.
 else_stmt : ELSE statement {$$ = template("else \n %s", $2);}; 
@@ -268,5 +268,5 @@ special_functions_write :  write_int | write_real | write_string;
 %%
 void main() {
 	if (yyparse() != 0)
-		printf("Invalid input.\n");
+		printf("printf(\"Invalid Input!\");");
 	}
