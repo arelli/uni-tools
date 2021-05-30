@@ -61,6 +61,7 @@
 %left FUNC2
 %left FUNC1
 
+
 //%glr-parser  https://stackoverflow.com/questions/39781557/bison-cant-solve-conflicts-shift-reduce-and-reduce-reduce
 
 %%  // the beginning of the rules section
@@ -180,6 +181,7 @@ list_of_assignments: ID ASSIGN  expr_or_string {$$ = template("%s=%s",$1,$3);}
                     | ID ASSIGN  expr_or_string COMMA list_of_assignments {$$ = template("%s=%s, %s",$1,$3,$5);}
                     |ID COMMA list_of_assignments {$$=template("%s,%s",$1,$3);}
                     |ID {$$=template("%s",$1);};
+                    
 // TODO: make this rule recognize special functions. It doesnt, even if they are here.                    
 expr_or_string:  special_functions_read | special_functions_write |expression | STR ;  // we want to assign either an expression, or a string.
 
@@ -228,6 +230,7 @@ function_call : ID LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS
 // the list of arguments of a function
 list_of_arguments : expr_or_string {$$ = template("%s",$1);}
                     | list_of_arguments COMMA expr_or_string {$$ = template("%s,%s",$1,$3);}
+                    | %empty {$$="";}
 ;
 // the format of an array "call" or reference.                  
 array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1, $3);}
