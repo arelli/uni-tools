@@ -10,8 +10,6 @@
 
 %union{
     char* str;
-    int num;
-    
 }
 /* tokens */
 %token <str> ID   //this needs to have the <str> !
@@ -43,7 +41,7 @@
 %type <str> expr_or_string var_decl_section lines line const_decl const_decl_section prologue function_decl parameters
 %type <str> function_body  statement return_line assignment assignment_line if_stmt else_stmt statements for_loop while_loop
 %type <str> function_decl_section func_begin begin_body read_string read_int read_real write_string write_int write_real
-
+%type <str> special_functions_read special_functions_write
 %start prologue
 
 //%glr-parser  https://stackoverflow.com/questions/39781557/bison-cant-solve-conflicts-shift-reduce-and-reduce-reduce
@@ -88,7 +86,7 @@ function_body :  var_decl_section  const_decl_section  statements {$$ = template
 
 
 statements : statements statement {$$ = template("%s \n%s",$1,$2);}
-            | statement { $$ = $1; };  // TODO: remove + 4 conflicts(of 6)
+             |statement { $$ = $1; };  // TODO: remove + 4 conflicts(of 6)
 
 statement : assignment_line {$$ = template("%s;",$1);} 
              | if_stmt {$$ = template("%s;",$1);} 
@@ -96,9 +94,8 @@ statement : assignment_line {$$ = template("%s;",$1);}
              | function_call SEMIC {$$ = template("%s;",$1);}  // TODO: doesnt recognize func_calls!(????) fix it
              | BREAK SEMIC {$$ = template("break;");};  // TODO remove 1 conflict from here!!!
              | CONTINUE SEMIC {$$ = template("continue;");}; // TODO remove 1 conflict from here!!!
-             | while_loop 
-             | for_loop
-             | read_int | read_real | read_string | write_int | write_real | write_string
+             | while_loop | for_loop
+             | special_functions_read | special_functions_write
              ;
 
 // working for loop transpiler, TODO: remove 1 conflict.             
@@ -116,7 +113,7 @@ if_stmt : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements 
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement else_stmt{$$ = template("if (%s) \n %s \n else \n%s",$3,$5,$6); }  // TODO: remove 2 conflicts.
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("if (%s) \n %s ",$3,$5); }  // for single command if.
 
-else_stmt : ELSE statements {$$ = template("else \n %s", $2);};  // TODO: add support for ELSE IF!!!
+else_stmt : ELSE statement {$$ = template("else \n %s", $2);};  // TODO: add support for ELSE IF!!!
             | ELSE LEFT_CURLY statements RIGHT_CURLY {$$ = template("else \n{\n%s\n}", $3);};
 
 
@@ -205,18 +202,19 @@ array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1
 
 // special function calls(+6 conflicts!!!)
 
-read_string: READ_STRING LEFT_PARENTESIS RIGHT_PARENTHESIS { $$ = template("readString();"); }
+read_string: READ_STRING LEFT_PARENTESIS RIGHT_PARENTHESIS SEMIC { $$ = template("readString();"); }
 ;
 
-read_int: READ_INT LEFT_PARENTESIS RIGHT_PARENTHESIS { $$ = template("readInt();"); }
+read_int: READ_INT LEFT_PARENTESIS RIGHT_PARENTHESIS SEMIC { $$ = template("readInt();"); }
 ;
 
-read_real: READ_REAL LEFT_PARENTESIS RIGHT_PARENTHESIS { $$ = template("readReal();"); }
+read_real: READ_REAL LEFT_PARENTESIS RIGHT_PARENTHESIS SEMIC { $$ = template("readReal();"); }
 ;
 
 write_string : WRITE_STRING LEFT_PARENTESIS ID RIGHT_PARENTHESIS SEMIC { $$ = template("writeString(%s);", $3); }
        | WRITE_STRING LEFT_PARENTESIS STR RIGHT_PARENTHESIS SEMIC { $$ = template("writeString(%s);", $3); }
 ;
+
 
 write_int : WRITE_INT LEFT_PARENTESIS ID RIGHT_PARENTHESIS SEMIC { $$ = template("writeInt(%s);", $3); }
        | WRITE_INT LEFT_PARENTESIS INT RIGHT_PARENTHESIS SEMIC     { $$ = template("writeInt(%s);", $3); }
@@ -226,7 +224,9 @@ write_real : WRITE_REAL LEFT_PARENTESIS ID RIGHT_PARENTHESIS SEMIC { $$ = templa
        | WRITE_REAL LEFT_PARENTESIS REAL RIGHT_PARENTHESIS SEMIC { $$ = template("writeReal(%s);", $3); }
 ;
 
-
+//
+special_functions_read: read_int | read_real | read_string ;
+special_functions_write :  write_int | write_real | write_string;
 
 
 
