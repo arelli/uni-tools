@@ -55,11 +55,12 @@
 %left  LIN6
 %left  LIN7
 %left LIN8
-
+// the priorities for the function-body-parts(implementation of optional code sections) to avoid conflicts.
 %left FUNC4
 %left FUNC3
 %left FUNC2
 %left FUNC1
+
 
 //%glr-parser  https://stackoverflow.com/questions/39781557/bison-cant-solve-conflicts-shift-reduce-and-reduce-reduce
 
@@ -102,6 +103,7 @@ function_decl_section : function_decl  | function_decl_section function_decl {$$
 function_decl : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data_type LEFT_CURLY function_body RIGHT_CURLY
 {$$ = template("%s %s(%s){\n%s\n}",$6, $2, $4,$8);};
 
+// the parameters that we give to a function.
 parameters : expr_or_string data_type{ $$ = template("%s %s",$2, $1);}
            | parameters COMMA expr_or_string data_type {$$ = template("%s,%s %s",$1, $4,$3);};
            | %empty {$$="";}
@@ -116,10 +118,10 @@ function_body2 :  var_decl_section  statements {$$ = template("%s\n%s", $1,$2);}
 function_body3 :  const_decl_section  statements {$$ = template("%s\n%s", $1,$2);};
 function_body4 :  statements // only the statements are mandatory.
 
-
+// the statements are all the commands of the PI language that can be used for example, in a function body.
 statements : statements statement {$$ = template("%s \n%s",$1,$2);}
-             |statement { $$ = $1; };  // TODO: remove + 4 conflicts(of 6)
-
+             |statement { $$ = $1; };  
+             
 statement : assignment_line {$$ = template("%s;",$1);} 
              | if_stmt {$$ = template("%s;",$1);} 
              | return_line {$$ = template("%s;",$1);}
@@ -140,11 +142,11 @@ while_loop : WHILE LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY state
             ;
             
 // TODO: maybe instead of statements, we can use the function body.
-if_stmt : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY else_stmt {$$ = template("if (%s){ \n %s \n}\n%s",$3,$6,$8);}
+if_stmt : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY else_stmt{$$ = template("if (%s){ \n %s \n}\n%s",$3,$6,$8);}
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("if (%s){ \n %s \n}",$3,$6); }
-        | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement else_stmt{$$ = template("if (%s) \n %s \n else \n%s",$3,$5,$6); }  // TODO: remove 2 conflicts.
+        | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement else_stmt {$$ = template("if (%s) \n %s \n else \n%s",$3,$5,$6); }  // TODO: remove 2 conflicts.
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("if (%s) \n %s ",$3,$5); }  // for single command if.
-
+// TODO: there is no implementation for if/else/if. Fix it.
 else_stmt : ELSE statement {$$ = template("else \n %s", $2);}; 
             | ELSE LEFT_CURLY statements RIGHT_CURLY {$$ = template("else \n{\n%s\n}", $3);};
 
@@ -174,7 +176,7 @@ return_line : RETURN expr_or_string SEMIC{$$=template("return %s",$2);}
             | RETURN SEMIC{$$=template("return");}
                //| %empty {$$=template("");}
 ;
-
+// the assignments that go inside a variable or constant declaration
 list_of_assignments: ID ASSIGN  expr_or_string {$$ = template("%s=%s",$1,$3);}
                     | ID ASSIGN  expr_or_string COMMA list_of_assignments {$$ = template("%s=%s, %s",$1,$3,$5);}
                     |ID COMMA list_of_assignments {$$=template("%s,%s",$1,$3);}
@@ -182,6 +184,7 @@ list_of_assignments: ID ASSIGN  expr_or_string {$$ = template("%s=%s",$1,$3);}
 // TODO: make this rule recognize special functions. It doesnt, even if they are here.                    
 expr_or_string:  special_functions_read | special_functions_write |expression | STR ;  // we want to assign either an expression, or a string.
 
+// a list of the data types("int","real","bool" etc.)
 data_type:  // int-->int , real --> double, string-->char*, bool--> int(0 or 1) etc
     INT_TYPE  { $$ =template("int");} 
     | REAL_TYPE { $$ =template("double");} 
@@ -193,7 +196,7 @@ data_type:  // int-->int , real --> double, string-->char*, bool--> int(0 or 1) 
 array_type : array_call data_type {$$ = template("%s %s",$2, $1);}  // TODO: doesnt accept this grammar, fix it.
            | LEFT_BRACKET RIGHT_BRACKET data_type {$$ = template("%s*",$3);}
 ;
-
+// all the mathematical and logical expressions, including variable names and function calls.
 expression :  LEFT_PARENTESIS expression RIGHT_PARENTHESIS { $$ = template("(%s)", $2);}
        | expression PLUS expression { $$ = template("%s+%s", $1, $3);}
        | expression MINUS expression { $$ = template("%s-%s", $1, $3);}
@@ -220,14 +223,14 @@ expression :  LEFT_PARENTESIS expression RIGHT_PARENTHESIS { $$ = template("(%s)
        | function_call {$$ = $1;} 
        | array_call {$$ = $1;}  // array call
 ;
-
+// the format of a function call
 function_call : ID LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS
                 {$$ = template("%s(%s)",$1,$3);};
-
+// the list of arguments of a function
 list_of_arguments : expr_or_string {$$ = template("%s",$1);}
                     | list_of_arguments COMMA expr_or_string {$$ = template("%s,%s",$1,$3);}
 ;
-                    
+// the format of an array "call" or reference.                  
 array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1, $3);}
 ;
 
@@ -256,7 +259,7 @@ write_real : WRITE_REAL LEFT_PARENTESIS ID RIGHT_PARENTHESIS SEMIC { $$ = templa
        | WRITE_REAL LEFT_PARENTESIS REAL RIGHT_PARENTHESIS SEMIC { $$ = template("writeReal(%s);", $3); }
 ;
 
-//
+// just to gather read functions and write finctions into two groups.
 special_functions_read: read_int | read_real | read_string ;
 special_functions_write :  write_int | write_real | write_string;
 
