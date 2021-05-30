@@ -42,7 +42,7 @@
 %type <str> expression function_call  array_call list_of_arguments var_decl list_of_assignments array_type data_type
 %type <str> expr_or_string var_decl_section lines line const_decl const_decl_section prologue function_decl parameters
 %type <str> function_body  statement return_line assignment assignment_line if_stmt else_stmt statements for_loop while_loop
-%type <str> function_decl_section
+%type <str> function_decl_section func_begin begin_body 
 
 %start prologue
 
@@ -63,10 +63,15 @@ lines :  line {$$ = $1;}  // just to read multiple lines
     | lines line {$$ = template("%s\n%s", $1, $2);} 
 ;
         
-line : var_decl_section | const_decl_section | function_decl_section 
+line : var_decl_section | const_decl_section | function_decl_section | func_begin
  ;
         
-// program : var_decl_section const_decl_section func_decl_section {};
+func_begin : FUNC KW_BEGIN LEFT_PARENTESIS RIGHT_PARENTHESIS LEFT_CURLY begin_body RIGHT_CURLY
+{$$ = template("void main(){\n%s\n}", $6);}
+;
+
+begin_body : const_decl_section var_decl_section statements return_line
+{$$=template("%s \n %s \n %s\n %s" ,$1,$2,$3, $3);}
 
 // TODO remove 1 connflict!
 function_decl_section : function_decl 
@@ -115,7 +120,7 @@ else_stmt : ELSE statements {$$ = template("else \n %s", $2);};  // TODO: add su
 
 
 // a line where an assignment takes place
-assignment_line : assignment SEMIC {$$ = template("%s;", $1);};
+assignment_line : assignment SEMIC {$$ = template("%s", $1);};
 
 // wee need an assignment without a SEMIC for use inside the for() loop
 assignment : ID ASSIGN expr_or_string {$$ = template("%s=%s", $1,$3);};
@@ -135,7 +140,8 @@ var_decl_section: var_decl var_decl_section {$$ = template("%s \n%s", $1,$2);}
 
 var_decl : VAR list_of_assignments data_type SEMIC {$$ = template("%s %s;", $3,$2);};  // TODO remove this scenario!!!!
 
-return_line : RETURN expr_or_string SEMIC{$$=template("return %s;",$2);}
+return_line : RETURN expr_or_string SEMIC{$$=template("return %s",$2);}
+            | RETURN SEMIC{$$=template("return");}
                //| %empty {$$=template("");}
 ;
 
