@@ -40,8 +40,9 @@
 %right RIGHT_PARENTHESIS
 
 %type <str> expression function_call  array_call list_of_arguments var_decl list_of_assignments array_type data_type
-%type <str> expr_or_string var_decl_section lines line const_decl const_decl_section prologue function_declaration parameters
+%type <str> expr_or_string var_decl_section lines line const_decl const_decl_section prologue function_decl parameters
 %type <str> function_body  statement return_line assignment assignment_line if_stmt else_stmt statements for_loop while_loop
+%type <str> function_decl_section
 
 %start prologue
 
@@ -62,13 +63,16 @@ lines :  line {$$ = $1;}  // just to read multiple lines
     | lines line {$$ = template("%s\n%s", $1, $2);} 
 ;
         
-line : var_decl_section | const_decl_section | function_declaration 
+line : var_decl_section | const_decl_section | function_decl_section 
  ;
         
 // program : var_decl_section const_decl_section func_decl_section {};
 
+// TODO remove 1 connflict!
+function_decl_section : function_decl 
+                    | function_decl_section function_decl {$$ = template("%s\n%s", $1, $2);} 
 
-function_declaration : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data_type LEFT_CURLY function_body RIGHT_CURLY
+function_decl : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data_type LEFT_CURLY function_body RIGHT_CURLY
 {$$ = template("%s %s(%s){\n%s\n}",$6, $2, $4,$8);};
 
 parameters : expr_or_string { $$ = template("%s",$1);}
