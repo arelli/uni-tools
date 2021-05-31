@@ -1,5 +1,5 @@
-Project: make a simple transpiler(not compiler. it just transpiles an imaginary language named PI, into c language that can then be compiled with gcc!) for the Theory of Computation class at T.U.C. \n
-\n**How to compile/run the compiler:**\n\n
+Project: make a simple transpiler(not compiler. it just transpiles an imaginary language named PI, into c language that can then be compiled with gcc!) for the Theory of Computation class at T.U.C. 
+<br><br>**How to compile/run the compiler:**<br><br>
 First run :
 ```
 bison -d -v -r all grammer1.y
