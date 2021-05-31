@@ -146,7 +146,10 @@ if_stmt : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements 
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("if (%s){ \n %s \n}",$3,$6); }
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement else_stmt {$$ = template("if (%s) \n %s \n %s",$3,$5,$6); }  // TODO: remove 2 conflicts.
         | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("if (%s) \n %s ",$3,$5); }  // for single command if.
-// TODO: there is no implementation for if/else/if. Fix it.
+// note for the above: the  parser has a conflict right after the RIGHT_PARENTHESIS: it can go to 2 different
+// outcomes following a LEFT_CURLY, and 2 different outcomes following a statement. Vison is LR(1), which means that 
+// it cannot "see" more than 1 tokens ahead, so it cant spot the difference of the above paths.
+
 else_stmt : ELSE statement {$$ = template("else \n %s", $2);}; 
             | ELSE LEFT_CURLY statements RIGHT_CURLY {$$ = template("else \n{\n%s\n}", $3);};
 
