@@ -6,7 +6,7 @@ multiple fnction declarations */
 
 func ask_for_number() int {
     var input int;
-    writeString("Enter a number: ");
+    writeString("\nEnter a number: ");
     input = readInt();
     return input;
 }
@@ -105,7 +105,7 @@ func calculator() int{
         else
             writeString("Wrong option number. The options are 1(+),2(-),3(*) and 4(%).\n");
         
-        writeString("Enter an option again(or 0 to exit):");
+        writeString("Enter an option again(or 0 to exit the calculator):");
         user_input = readInt();
     }
 }
@@ -120,11 +120,12 @@ func begin(){
     while (user_input!=0){
         if (user_input==1){
             printf("Check if a number is prime:");  // this line here is to demonstrate calling actual C functions!
-            temp_var = readInt();
-            temp_var2 = is_prime(temp_var);
+            temp_var = ask_for_number();
+            temp_var2 =  0;
+            temp_var2 = is_prime(temp_var2);
             if (temp_var2==0)
-                writeString("This number is prime\n");
-            else if(temp_var2 ==1)
+                writeString("This number is prime\n");  // TODO: fix this for some reason it doesnt work.
+            else 
                 writeString("This number is not prime\n");
         }
         else if (user_input == 2)
