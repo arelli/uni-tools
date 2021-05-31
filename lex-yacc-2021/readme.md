@@ -1,5 +1,6 @@
-Making a simple transpiler(not compiler. it just transpiles an imaginary language named PI, into c language that can then be compiled with gcc!) for the Theory of Computation class at Technical University of Crete.
-First run 
+Project: make a simple transpiler(not compiler. it just transpiles an imaginary language named PI, into c language that can then be compiled with gcc!) for the Theory of Computation class at T.U.C. 
+**How to compile/run the compiler:**
+First run :
 ```
 bison -d -v -r all grammer1.y
 ```
@@ -7,7 +8,7 @@ this is done for the Bison(yacc) to create the files "grammer1.tab.c" and "gramm
 These two files let the two programms communicate through the inclusion of mutual files. The return variables of the flex file, are directly referencing the Biosn tokens(same names!).
 Then we can run:
 ```
-flex mylexer.l
+flex lexer1.l
 ```
 to create the flex file "lex.yy.c". This file is included later in the gcc compilation of the bison file:
 ```
