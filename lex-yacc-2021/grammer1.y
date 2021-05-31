@@ -34,8 +34,6 @@
 %right DOUBLE_STAR
 %left LOGIC_NOT
 %left LEFT_PARENTESIS
-//%left LEFT_BRACKET
-//%right RIGHT_BRACKET
 %right RIGHT_PARENTHESIS
 
 %type <str> expression function_call  array_call list_of_arguments var_decl list_of_assignments array_type data_type
@@ -48,21 +46,6 @@
 %type <str> id_func_arr_solver id_func_arr_solver1 
 // declaration of the starting point of the parsing.
 %start prologue
-// these are here to define priorities in the line type! mufunction_body2st be here to avoid conflicts.
-%left  LIN1  // we want lin1 to have lower priority from lin2 etc....
-%left LIN2
-%left LIN3
-%left  LIN4
-%left LIN5
-%left  LIN6
-%left  LIN7
-%left LIN8
-// the priorities for the function-body-parts(implementation of optional code sections) to avoid conflicts.
-%left FUNC4
-%left FUNC3
-%left FUNC2
-%left FUNC1
-
 
 %%  // the beginning of the rules section
 prologue : lines{        // the print is at the top of the recursion tree! important.
@@ -80,9 +63,8 @@ lines :  line {$$ = $1;}  // just to read multiple lines
 ;
 
 // this is the parent of    
-line :  line8 %prec LIN8 | line1 %prec LIN1 | line2 %prec LIN2 | line3 %prec LIN3 | line4 %prec LIN4  
-    | line5 %prec LIN5 | line6 %prec LIN6| line7 %prec LIN7 
- ;
+line :  line8 | line1 | line2 | line3 | line4| line5 | line6 | line7 ;
+
  // the below "table" implements the "optional" features of the code.
 line8 : const_decl_section var_decl_section  function_decl_section  func_begin {$$ = template("%s\n%s\n%s\n %s",$1, $2, $3,$4);};
 line1 : const_decl_section  function_decl_section  func_begin {$$ = template("%s\n%s\n%s",$1, $2, $3);};
@@ -95,11 +77,10 @@ line7 : func_begin ;
 
 
 // here the FUNC kewyord is removed from the expression because it doesnt let the begin function to be recognized. TODO: fix it!.       
-func_begin : FUNC KW_BEGIN LEFT_PARENTESIS RIGHT_PARENTHESIS LEFT_CURLY function_body RIGHT_CURLY {$$ = template("void main(){\n%s\n}", $6);}
-;
+func_begin : FUNC KW_BEGIN LEFT_PARENTESIS RIGHT_PARENTHESIS LEFT_CURLY function_body RIGHT_CURLY {$$ = template("void main(){\n%s\n}", $6);} ;
 
 // TODO remove 1 connflict!
-function_decl_section : function_decl  | function_decl_section function_decl {$$ = template("%s\n%s", $1, $2);} 
+function_decl_section : function_decl  | function_decl_section function_decl {$$ = template("%s\n%s", $1, $2);} ;
 
 function_decl : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data_type LEFT_CURLY function_body RIGHT_CURLY
 {$$ = template("%s %s(%s){\n%s\n}",$6, $2, $4,$8);}
@@ -112,9 +93,7 @@ parameters : expr_or_string data_type{ $$ = template("%s %s",$2, $1);}
 ;           
            
 // TODO: mke var and const decl section OPTIONAL! (and also statements optional!)
-function_body :  function_body1 %prec FUNC1 | function_body2 %prec FUNC2 | function_body3 %prec FUNC3
-            | function_body4 %prec FUNC4
-;
+function_body :  function_body1 | function_body2 | function_body3 | function_body4 ;
 
 // Implementation of "optional" features inside functions.(and their hierarchy)
 function_body1 :  var_decl_section  const_decl_section  statements {$$ = template("%s\n%s\n%s", $1,$2,$3);};
