@@ -24,7 +24,7 @@
 %token VAR CONST IF ELSE FOR WHILE BREAK CONTINUE SEMIC FUNC NIL RETURN KW_BEGIN PLUS  MINUS STAR SLASH PERCENT 
 %token DOUBLE_STAR LOGIC_EQUALS LOGIC_NOT_EQUALS LESS_THAN LESS_THAN_OR_EQUALS GREATER_THAN  GREATER_OR_EQUALS LOGIC_AND  LOGIC_OR LOGIC_NOT
 %token LEFT_PARENTESIS RIGHT_PARENTHESIS COMMA LEFT_BRACKET RIGHT_BRACKET LEFT_CURLY RIGHT_CURLY COMMENT MULTI_LINE_COMMENT 
-
+%token <str> ERROR_MESSAGE
 
 %left LOGIC_OR
 %left LOGIC_AND
@@ -45,7 +45,8 @@
 %type <str> special_functions_read special_functions_write  func_begin
 %type <str> line1  line2  line3  line4  line5  line6 line7  line8  //priorities of body types
 %type <str> function_body1 function_body2 function_body3 function_body4 if_stmt1 if_stmt2 if_stmt3
-%type <str> id_func_arr_solver id_func_arr_solver1
+%type <str> id_func_arr_solver id_func_arr_solver1 
+// declaration of the starting point of the parsing.
 %start prologue
 // these are here to define priorities in the line type! mufunction_body2st be here to avoid conflicts.
 %left  LIN1  // we want lin1 to have lower priority from lin2 etc....
@@ -65,21 +66,22 @@
 
 %%  // the beginning of the rules section
 prologue : lines{        // the print is at the top of the recursion tree! important.
-        puts("#include \"pilib.h\" "); 
-        puts("#include <math.h>");  //include it for the pow() function
-        printf("/* transcribed pi program*/ \n\n");
-        if (yyerror_count == 0) {
-            printf("%s\n", $1);  // this is needed(at the top of the recursion tree) to produce code.
-        }
-    };
-
+        FILE *fp;
+        fp = fopen("transpiled.c", "w+");
+        fputs(c_prologue, fp);
+        fputs("#include <math.h>\n", fp);
+        fputs($1, fp);
+        fputs("\n", fp);
+        fclose(fp); }
+;
+        
 lines :  line {$$ = $1;}  // just to read multiple lines
     | lines line {$$ = template("%s\n%s", $1, $2);} 
 ;
 
 // this is the parent of    
 line :  line8 %prec LIN8 | line1 %prec LIN1 | line2 %prec LIN2 | line3 %prec LIN3 | line4 %prec LIN4  
-    | line5 %prec LIN5 | line6 %prec LIN6| line7 %prec LIN7
+    | line5 %prec LIN5 | line6 %prec LIN6| line7 %prec LIN7 
  ;
  // the below "table" implements the "optional" features of the code.
 line8 : const_decl_section var_decl_section  function_decl_section  func_begin {$$ = template("%s\n%s\n%s\n %s",$1, $2, $3,$4);};
@@ -100,26 +102,30 @@ func_begin : FUNC KW_BEGIN LEFT_PARENTESIS RIGHT_PARENTHESIS LEFT_CURLY function
 function_decl_section : function_decl  | function_decl_section function_decl {$$ = template("%s\n%s", $1, $2);} 
 
 function_decl : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data_type LEFT_CURLY function_body RIGHT_CURLY
-{$$ = template("%s %s(%s){\n%s\n}",$6, $2, $4,$8);};
+{$$ = template("%s %s(%s){\n%s\n}",$6, $2, $4,$8);}
+;
 
 // the parameters that we give to a function.
 parameters : expr_or_string data_type{ $$ = template("%s %s",$2, $1);}
            | parameters COMMA expr_or_string data_type {$$ = template("%s,%s %s",$1, $4,$3);};
            | %empty {$$="";}
+;           
            
 // TODO: mke var and const decl section OPTIONAL! (and also statements optional!)
 function_body :  function_body1 %prec FUNC1 | function_body2 %prec FUNC2 | function_body3 %prec FUNC3
             | function_body4 %prec FUNC4
+;
 
 // Implementation of "optional" features inside functions.(and their hierarchy)
 function_body1 :  var_decl_section  const_decl_section  statements {$$ = template("%s\n%s\n%s", $1,$2,$3);};
 function_body2 :  var_decl_section  statements {$$ = template("%s\n%s", $1,$2);};
 function_body3 :  const_decl_section  statements {$$ = template("%s\n%s", $1,$2);};
-function_body4 :  statements // only the statements are mandatory.
+function_body4 :  statements ;// only the statements are mandatory.
 
 // the statements are all the commands of the PI language that can be used for example, in a function body.
 statements : statements statement {$$ = template("%s \n%s",$1,$2);}
-             |statement { $$ = $1; };  
+             |statement { $$ = $1; }
+;  
              
 statement : assignment_line {$$ = template("%s;",$1);} 
              | if_stmt {$$ = template("%s;",$1);} 
@@ -129,27 +135,28 @@ statement : assignment_line {$$ = template("%s;",$1);}
              | CONTINUE SEMIC {$$ = template("continue;");}; 
              | while_loop | for_loop
              | special_functions_read | special_functions_write
-             ;
+;
 
 // working for loop transpiler          
 for_loop: FOR LEFT_PARENTESIS assignment SEMIC expression SEMIC assignment RIGHT_PARENTHESIS statement {$$=template("for (%s;%s;%s)\n%s", $3, $5, $7, $9);}
             | FOR LEFT_PARENTESIS assignment SEMIC expression SEMIC assignment RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY
-            {$$=template("for (%s;%s;%s){\n%s\n}",$3, $5, $7, $10);};
+            {$$=template("for (%s;%s;%s){\n%s\n}",$3, $5, $7, $10);}
+;
 //TODO add brackets in the statements!
 while_loop : WHILE LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("while (%s){ \n %s \n}",$3,$6);}
             | WHILE LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("while (%s)\n%s",$3,$5);}  
-            ;
+;
             
 // TODO: maybe instead of statements, we can use the function body.
 if_stmt : if_stmt3 else_stmt{$$ = template("%s\n%s",$1,$2);}
         | if_stmt3  //TODO: fix the conflict from this exact line!
+;
 
+if_stmt1 : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("if (%s){ \n %s \n}",$3,$6); } ;
 
-if_stmt1 : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("if (%s){ \n %s \n}",$3,$6); }
+if_stmt2 : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("if (%s) \n %s ",$3,$5); } ;
 
-if_stmt2 : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("if (%s) \n %s ",$3,$5); } 
-
-if_stmt3: if_stmt1 | if_stmt2
+if_stmt3: if_stmt1 | if_stmt2;
 
 else_stmt : ELSE statement {$$ = template("else \n %s", $2);}; 
             | ELSE LEFT_CURLY statements RIGHT_CURLY {$$ = template("else \n{\n%s\n}", $3);};
@@ -228,20 +235,21 @@ expression :  LEFT_PARENTESIS expression RIGHT_PARENTHESIS { $$ = template("(%s)
        //| function_call {$$ = $1;} 
        //| array_call {$$ = $1;}  // array call  //the other last confl comes from ID,func_call and array_call
        | id_func_arr_solver
+;
        
- 
 id_func_arr_solver : ID id_func_arr_solver1 {$$ = template("%s %s", $1, $2);}
                  
  
 id_func_arr_solver1: LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS {$$ = template("(%s)",$2);};  // for the function
                    | LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("[%s]", $2);}  // for the array
-                   //| %empty {$$ = template("");}  // for the ID, spits conflict
+ ;                  //| %empty {$$ = template("");}  // for the ID, spits conflict
                    
 //id_func_arr_solver3 : ID | id_func_arr_solver
  
 // the format of a function call
 function_call : ID LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS
-                {$$ = template("%s(%s)",$1,$3);};
+                {$$ = template("%s(%s)",$1,$3);}
+ ;
 // the list of arguments of a function
 list_of_arguments : expr_or_string {$$ = template("%s",$1);}
                     | list_of_arguments COMMA expr_or_string {$$ = template("%s,%s",$1,$3);}
@@ -253,14 +261,11 @@ array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1
 
 // special function calls
 
-read_string: READ_STRING LEFT_PARENTESIS RIGHT_PARENTHESIS  { $$ = template("readString()"); }
-;
+read_string: READ_STRING LEFT_PARENTESIS RIGHT_PARENTHESIS  { $$ = template("readString()"); };
 
-read_int: READ_INT LEFT_PARENTESIS RIGHT_PARENTHESIS  { $$ = template("readInt()"); }
-;
+read_int: READ_INT LEFT_PARENTESIS RIGHT_PARENTHESIS  { $$ = template("readInt()"); };
 
-read_real: READ_REAL LEFT_PARENTESIS RIGHT_PARENTHESIS  { $$ = template("readReal()"); }
-;
+read_real: READ_REAL LEFT_PARENTESIS RIGHT_PARENTHESIS  { $$ = template("readReal()");};
 
 write_string : WRITE_STRING LEFT_PARENTESIS ID RIGHT_PARENTHESIS SEMIC { $$ = template("writeString(%s);", $3); }
        | WRITE_STRING LEFT_PARENTESIS STR RIGHT_PARENTHESIS SEMIC { $$ = template("writeString(%s);", $3); }
@@ -279,10 +284,10 @@ write_real : WRITE_REAL LEFT_PARENTESIS ID RIGHT_PARENTHESIS SEMIC { $$ = templa
 special_functions_read: read_int | read_real | read_string ;
 special_functions_write :  write_int | write_real | write_string;
 
-
-
 %%
 void main() {
 	if (yyparse() != 0)
-		printf("//Invalid Input!");
-	}
+		printf("\n-->Pi Compiler: Invalid Input!<--\n");
+    else
+        printf("\n-->Pi Compiler: Compilation Succeeded!<--\n");
+}
