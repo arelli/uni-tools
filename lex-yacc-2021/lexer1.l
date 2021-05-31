@@ -94,7 +94,7 @@ STR \"[^\"\n]*\"
 
 <<EOF>>  return EOF;  /* reached the end of file! */
 
-. {printf("Unrecognized token \"%s\" in line %d\n.", yytext, line_num);}  /* when nothing of the above, show error info */
+. {fprintf(stderr,"Lexical analyzer output: unrecognized token \"%s\" in line %d\n.", yytext, line_num);yylval.str = strdup(yytext); return ERROR_MESSAGE;}  /* when nothing of the above, show error info */
 
 "//"[^\n]*  		    /* we dont care about commentss */
 "/*"                    {BEGIN(comm);}  /* begin "comment" state when you see this */
