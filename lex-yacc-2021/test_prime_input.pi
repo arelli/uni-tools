@@ -1,0 +1,47 @@
+/* this program is written in PI langiage(uni class)
+and is meant to elaborate if a given number is prime or not */
+
+/*the below function is just to demonstrate
+multiple fnction declarations */
+func ask_for_number() int {
+    var input int;
+    writeString("Enter a number: ");
+    input = readInt();
+    return input;
+}
+
+func do_nothing() int{
+    var a int;
+    a=10;  // the statements section is mandatory.
+    // do nothing!
+}
+
+func is_prime(input int) int {
+    var prime_flag,counter int;
+    if (input == 0)
+        return 1;
+    for (counter=2;counter<input;counter = counter + 1){
+        if (input%counter==0){  // if a divisor is found..
+            prime_flag = input%counter;
+            return 1;  // demonstration of the break command
+        }
+    }
+    return prime_flag;
+}
+
+
+func begin() {  
+    var given_number=1,return_value=1 int;
+    writeString("This is a programm that asks for a number \n");
+    writeString("and tells you if its a prime!\n");
+    while (given_number!=0){
+        given_number = ask_for_number();
+        return_value = is_prime(given_number);
+        if (return_value == 1)
+            writeString("This is not a prime number.\n");
+        else{
+            writeString("This IS a prime number.\n");
+            do_nothing();  // to demonstrate multiple line else
+        }
+    }
+}
