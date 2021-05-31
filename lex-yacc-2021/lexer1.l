@@ -5,10 +5,9 @@
 #include "grammer.tab.h"
 #include "cgen.h"
 
-
 int line_num = 0;
 %}
-
+ /* here we define the basic types of the language */
 DIGIT [0-9]
 NUMBER  {DIGIT}{DIGIT}*
 DECIMAL ("."{NUMBER})|({NUMBER}("."{NUMBER}?)?)
@@ -16,8 +15,7 @@ REAL {DECIMAL}([eE][-+]?{NUMBER})?
 ID  [a-zA-Z_][0-9a-zA-Z_]*  
 STR \"[^\"\n]*\"
 
- /* define the start condition */
-
+ /* define the start condition for the comments*/
 %x comm  
 
 %%
@@ -75,14 +73,13 @@ STR \"[^\"\n]*\"
 "{" {return LEFT_CURLY;}
 "}" {return RIGHT_CURLY;}
 
-"readString"            {return READ_STRING; }  /* Functions */
+"readString"            {return READ_STRING; }  /* special PI Functions (given by the university)*/
 "readInt"               {return READ_INT; }
 "readReal"              {return READ_REAL; }
 "writeString"           {return WRITE_STRING; }
 "writeInt"              {return WRITE_INT; }
 "writeReal"             {return WRITE_REAL; }
 
- /* " " {return WHITESPACE;} */
 
  /* these have to be after the above rules! */
 {NUMBER} {yylval.str = strdup(yytext);return INT;}
@@ -93,15 +90,15 @@ STR \"[^\"\n]*\"
 
 \n line_num++;
 
-[ \t\r]  /* do nothing in white space */
+[ \t\r]  /* do nothing in white space(spaces,tabs etc) */
 
-<<EOF>>  return EOF;
+<<EOF>>  return EOF;  /* reached the end of file! */
 
-. {printf("Unrecognized tolkien %s in line %d\n", yytext, line_num);}  
+. {printf("Unrecognized token \"%s\" in line %d\n.", yytext, line_num);}  /* when nothing of the above, show error info */
 
 "//"[^\n]*  		    /* we dont care about commentss */
-"/*"                    {BEGIN(comm);}  
+"/*"                    {BEGIN(comm);}  /* begin "comment" state when you see this */
 <comm>[^*\n]*        
 <comm>"*"+[^*/\n]*   /* dont count * without / after them */
 <comm>\n             {line_num++; }
-<comm>"*"+"/"        { BEGIN(INITIAL);} /* initial is the normal flow of flex */
+<comm>"*"+"/"        { BEGIN(INITIAL);} /* when you see this(end of comment), return to normal code parsing*/
