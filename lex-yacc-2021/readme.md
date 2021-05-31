@@ -19,13 +19,9 @@ tell to the gcc that we need to include the flex libraries(Link FLex). The above
 ```
 ./grammer1 < [sometestprogram].pi
 ```
-or, if the output c code is in the stdout:
+We can give our compiler any input file written in "Pi", and it will translate it to C language(C99 standard) in the file "trasnpiled.c". Of course, we can then compile the program:
 ```
-./grammer1 < [sometestprogram].pi > [outputfile].c
-```
-We can give our compiler any input file written in "Pi", and it will translate it to C language(C99 standard). Of course, we can then compile the program:
-```
-gcc [outputfile].c -lm -o [executable_name]
+gcc transpiled.c -lm -o [executable_name]
 ```
 The -lm library is to include the "Math.h" library, which is used in the "\*\*" notation of Pi ( it has to be implemented using function pow() ).
 Last step: run the program.
