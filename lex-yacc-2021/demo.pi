@@ -125,7 +125,7 @@ func begin(){
             if (temp_var2==0)
                 writeString("This number is prime\n");
             else if(temp_var2 ==1)
-                writeString("This number is prime\n");
+                writeString("This number is not prime\n");
         }
         else if (user_input == 2)
             twin_primes();  // demonstration of single line if and function call as a statement
