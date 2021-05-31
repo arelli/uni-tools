@@ -189,7 +189,7 @@ expr_or_string:  special_functions_read | special_functions_write |expression | 
 data_type:  // int-->int , real --> double, string-->char*, bool--> int(0 or 1) etc
     INT_TYPE  { $$ =template("int");} 
     | REAL_TYPE { $$ =template("double");} 
-    | BOOL { $$ = template("bool");} 
+    | BOOL { $$ = template("int");} 
     | STR_TYPE { $$ = template("char*");} 
     | array_type { $$ = $1;} 
 ;
