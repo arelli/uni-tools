@@ -18,7 +18,7 @@ STR \"[^\"\n]*\"
 
  /* define the start condition */
 
-%x comment  
+%x comm  
 
 %%
 
@@ -99,9 +99,9 @@ STR \"[^\"\n]*\"
 
 . {printf("Unrecognized tolkien %s in line %d\n", yytext, line_num);}  
 
-"//"[^\n]*  		    /* we dont care about comments */
-"/*"                    {BEGIN(comment);}
-<comment>[^*\n]*        /* eat anything that's not a '*' */ 
-<comment>"*"+[^*/\n]*   /* dont count * without / after them */
-<comment>\n             {line_num++;} 
-<comment>"*"+"/"        { BEGIN(INITIAL);} /* initial is the normal flow of flex */
+"//"[^\n]*  		    /* we dont care about commentss */
+"/*"                    {BEGIN(comm);}  
+<comm>[^*\n]*        
+<comm>"*"+[^*/\n]*   /* dont count * without / after them */
+<comm>\n             {line_num++; }
+<comm>"*"+"/"        { BEGIN(INITIAL);} /* initial is the normal flow of flex */
