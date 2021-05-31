@@ -6,6 +6,7 @@
     
     extern int yylex(void);  /* runs from the lex.yy.c in the same dir */
     extern int line_counter;
+    
 %}
 
 %union{
@@ -186,6 +187,7 @@ data_type:  // int-->int , real --> double, string-->char*, bool--> int(0 or 1) 
   
 array_type : array_call data_type {$$ = template("%s %s",$2, $1);}  // TODO: doesnt accept this grammar, fix it.
            | LEFT_BRACKET RIGHT_BRACKET data_type {$$ = template("%s*",$3);}
+
 ;
 // all the mathematical and logical expressions, including variable names and function calls.
 expression :  LEFT_PARENTESIS expression RIGHT_PARENTHESIS { $$ = template("(%s)", $2);}
@@ -268,5 +270,5 @@ void main() {
 	if (yyparse() != 0)
 		printf("\n-->Pi Compiler: Invalid Input!<--\n");
     else
-        printf("\n-->Pi Compiler: Compilation Succeeded!<--\n");
+        printf("-->Pi Compiler: Compilation Succeeded!<--\n\n");
 }
