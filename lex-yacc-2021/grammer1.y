@@ -44,7 +44,7 @@
 %type <str> function_decl_section read_string read_int read_real write_string write_int write_real
 %type <str> special_functions_read special_functions_write  func_begin
 %type <str> line1  line2  line3  line4  line5  line6 line7  line8  //priorities of body types
-%type <str> function_body1 function_body2 function_body3 function_body4
+%type <str> function_body1 function_body2 function_body3 function_body4 if_stmt1 if_stmt2 if_stmt3
 %start prologue
 // these are here to define priorities in the line type! mufunction_body2st be here to avoid conflicts.
 %left  LIN1  // we want lin1 to have lower priority from lin2 etc....
@@ -142,13 +142,15 @@ while_loop : WHILE LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY state
             ;
             
 // TODO: maybe instead of statements, we can use the function body.
-if_stmt : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY else_stmt{$$ = template("if (%s){ \n %s \n}\n%s",$3,$6,$8);}
-        | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("if (%s){ \n %s \n}",$3,$6); }
-        | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement else_stmt {$$ = template("if (%s) \n %s \n %s",$3,$5,$6); }  // TODO: remove 2 conflicts.
-        | IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("if (%s) \n %s ",$3,$5); }  // for single command if.
-// note for the above: the  parser has a conflict right after the RIGHT_PARENTHESIS: it can go to 2 different
-// outcomes following a LEFT_CURLY, and 2 different outcomes following a statement. Vison is LR(1), which means that 
-// it cannot "see" more than 1 tokens ahead, so it cant spot the difference of the above paths.
+if_stmt : if_stmt3 else_stmt{$$ = template("%s\n%s",$1,$2);}
+        | if_stmt3
+
+
+if_stmt1 : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("if (%s){ \n %s \n}",$3,$6); }
+
+if_stmt2 : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("if (%s) \n %s ",$3,$5); } 
+
+if_stmt3: if_stmt1 | if_stmt2
 
 else_stmt : ELSE statement {$$ = template("else \n %s", $2);}; 
             | ELSE LEFT_CURLY statements RIGHT_CURLY {$$ = template("else \n{\n%s\n}", $3);};
@@ -225,8 +227,7 @@ expression :  LEFT_PARENTESIS expression RIGHT_PARENTHESIS { $$ = template("(%s)
        | FALSE {$$ = template("0");}
        | TRUE {$$ = template("1");}    
        | function_call {$$ = $1;} 
-       | array_call {$$ = $1;}  // array call
-;
+       | array_call {$$ = $1;}  // array call  //the other last conflict comes from ID,func_call and array_call
 // the format of a function call
 function_call : ID LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS
                 {$$ = template("%s(%s)",$1,$3);};
