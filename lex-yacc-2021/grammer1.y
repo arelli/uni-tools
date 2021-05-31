@@ -45,6 +45,7 @@
 %type <str> special_functions_read special_functions_write  func_begin
 %type <str> line1  line2  line3  line4  line5  line6 line7  line8  //priorities of body types
 %type <str> function_body1 function_body2 function_body3 function_body4 if_stmt1 if_stmt2 if_stmt3
+%type <str> id_func_arr_solver id_func_arr_solver1
 %start prologue
 // these are here to define priorities in the line type! mufunction_body2st be here to avoid conflicts.
 %left  LIN1  // we want lin1 to have lower priority from lin2 etc....
@@ -61,8 +62,6 @@
 %left FUNC2
 %left FUNC1
 
-
-//%glr-parser  https://stackoverflow.com/questions/39781557/bison-cant-solve-conflicts-shift-reduce-and-reduce-reduce
 
 %%  // the beginning of the rules section
 prologue : lines{        // the print is at the top of the recursion tree! important.
@@ -132,18 +131,18 @@ statement : assignment_line {$$ = template("%s;",$1);}
              | special_functions_read | special_functions_write
              ;
 
-// working for loop transpiler, TODO: remove 1 conflict.             
+// working for loop transpiler          
 for_loop: FOR LEFT_PARENTESIS assignment SEMIC expression SEMIC assignment RIGHT_PARENTHESIS statement {$$=template("for (%s;%s;%s)\n%s", $3, $5, $7, $9);}
             | FOR LEFT_PARENTESIS assignment SEMIC expression SEMIC assignment RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY
             {$$=template("for (%s;%s;%s){\n%s\n}",$3, $5, $7, $10);};
 //TODO add brackets in the statements!
 while_loop : WHILE LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("while (%s){ \n %s \n}",$3,$6);}
-            | WHILE LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("while (%s)\n%s",$3,$5);}  // TODO: remove 1 conflict.
+            | WHILE LEFT_PARENTESIS expression RIGHT_PARENTHESIS  statement {$$ = template("while (%s)\n%s",$3,$5);}  
             ;
             
 // TODO: maybe instead of statements, we can use the function body.
 if_stmt : if_stmt3 else_stmt{$$ = template("%s\n%s",$1,$2);}
-        | if_stmt3
+        | if_stmt3  //TODO: fix the conflict from this exact line!
 
 
 if_stmt1 : IF LEFT_PARENTESIS expression RIGHT_PARENTHESIS LEFT_CURLY statements RIGHT_CURLY {$$ = template("if (%s){ \n %s \n}",$3,$6); }
@@ -221,13 +220,25 @@ expression :  LEFT_PARENTESIS expression RIGHT_PARENTHESIS { $$ = template("(%s)
        | LOGIC_NOT expression { $$ = template("!%s", $2);}
        | PLUS expression { $$ = template("%s", $2);}
        | MINUS expression { $$ = template("(-1)*%s", $2);}
-       | INT   // print as is
+       | INT   // print as is 
 	   | REAL // the default action is $$=$1
-       | ID
+       | ID   // in conflict with the id_func_arr_solver(which already solves 1)
        | FALSE {$$ = template("0");}
        | TRUE {$$ = template("1");}    
-       | function_call {$$ = $1;} 
-       | array_call {$$ = $1;}  // array call  //the other last conflict comes from ID,func_call and array_call
+       //| function_call {$$ = $1;} 
+       //| array_call {$$ = $1;}  // array call  //the other last confl comes from ID,func_call and array_call
+       | id_func_arr_solver
+       
+ 
+id_func_arr_solver : ID id_func_arr_solver1 {$$ = template("%s %s", $1, $2);}
+                 
+ 
+id_func_arr_solver1: LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS {$$ = template("(%s)",$2);};  // for the function
+                   | LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("[%s]", $2);}  // for the array
+                   //| %empty {$$ = template("");}  // for the ID, spits conflict
+                   
+//id_func_arr_solver3 : ID | id_func_arr_solver
+ 
 // the format of a function call
 function_call : ID LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS
                 {$$ = template("%s(%s)",$1,$3);};
@@ -240,8 +251,7 @@ list_of_arguments : expr_or_string {$$ = template("%s",$1);}
 array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1, $3);}
 ;
 
-
-// special function calls(+6 conflicts!!!)
+// special function calls
 
 read_string: READ_STRING LEFT_PARENTESIS RIGHT_PARENTHESIS  { $$ = template("readString()"); }
 ;
