@@ -3,7 +3,7 @@ Design and implememnt a simple transpiler(not compiler-it just transpiles an ima
 ## How to Compile and Run
 To begin with, you have to run bison to the .y file, with the flags shown below:
 ```
-bison -d -v -r all grammer1.y
+bison -d -v -r all grammer.y
 ```
 this is done for the Bison(yacc) to create the files "grammer1.tab.c" and "grammer1.tab.h", that we are gonna include in the flex file(lexer1.l, in our case are already included in the file).
 These two files let the two programms communicate through the inclusion of mutual files. The return variables of the flex file, are directly referencing the Biosn tokens(same names!). Also, the parameter -r all is for bison to create a debug file, called grammar1.[output](https://www.gnu.org/software/bison/manual/html_node/Output-Files.html), that is **very** useful for debuging, especially solving conflicts([shift/reduce](https://www.gnu.org/software/bison/manual/html_node/Shift_002fReduce.html) and [reduce/reduce](https://www.gnu.org/software/bison/manual/html_node/Reduce_002fReduce.html)).
