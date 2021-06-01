@@ -92,7 +92,7 @@ else
  writeString("May be blue");
  
 ```
-Note that we can use nested else/if statements, and both accept single statements without curly brackets, and blocks of code **with** curly brackets. Also, there is no semicolon needed at the end.
+Note that we can use nested else/if statements, and both accept single statements without curly brackets, and blocks of code **with** curly brackets. Also, there is no semicolon needed at the end.<br>
 -> While Loops
 ```
 while (counter<38){
@@ -100,7 +100,7 @@ while (counter<38){
  writeInt(counter);
  }
  ```
- No semicolon needed here either.
+ No semicolon needed here either.<br>
  -> For Loops
  ```
  var count int;
@@ -108,7 +108,7 @@ while (counter<38){
   do_stuff();
  }
  ```
- No semicolon at the end needed here either.
+ No semicolon at the end needed here either.<br>
  -> Break and Continue statements:
  ```
  break;
