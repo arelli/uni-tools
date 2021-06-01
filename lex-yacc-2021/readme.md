@@ -18,7 +18,7 @@ to create the flex file "lex.yy.c"(default output filename). This file is includ
 The "cgen.c" file is given to us by the university, and we include it in the compilation for the resulting compiler and program to be able to use it. The flag -lfl is to 
 tell to the gcc that we need to include the flex libraries(Link FLex). The above results in a executable grammer1 file, which is essentialy our compiler:
 ```
-./grammer1 < [sometestprogram].pi
+./grammer < [sometestprogram].pi
 ```
 We can give our compiler any input file written in "Pi", and it will translate it to C language(C99 standard) in the file "trasnpiled.c". Of course, we can then compile the program:
 ```
