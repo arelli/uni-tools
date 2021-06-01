@@ -9,11 +9,11 @@ this is done for the Bison(yacc) to create the files "grammer1.tab.c" and "gramm
 These two files let the two programms communicate through the inclusion of mutual files. The return variables of the flex file, are directly referencing the Biosn tokens(same names!). Also, the parameter -r all is for bison to create a debug file, called grammar1.[output](https://www.gnu.org/software/bison/manual/html_node/Output-Files.html), that is **very** useful for debuging, especially solving conflicts([shift/reduce](https://www.gnu.org/software/bison/manual/html_node/Shift_002fReduce.html) and [reduce/reduce](https://www.gnu.org/software/bison/manual/html_node/Reduce_002fReduce.html)).
 Then we can run:
 ```
-flex lexer1.l
+flex lexer.l
 ```
 to create the flex file "lex.yy.c"(default output filename). This file is included later in the gcc compilation of the bison file:
 ```
- gcc -o grammer1 grammer1.tab.c lex.yy.c cgen.c -lfl
+ gcc -o grammer grammer.tab.c lex.yy.c cgen.c -lfl
 ```
 The "cgen.c" file is given to us by the university, and we include it in the compilation for the resulting compiler and program to be able to use it. The flag -lfl is to 
 tell to the gcc that we need to include the flex libraries(Link FLex). The above results in a executable grammer1 file, which is essentialy our compiler:
