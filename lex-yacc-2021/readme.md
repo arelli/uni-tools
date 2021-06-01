@@ -129,5 +129,56 @@ while (counter<38){
  //or
  return [value];
  ```
+ ## Example Code:
+ ```
+ /* This is an example code that calculates the twin prime numbers from 0 
+ up to a given value. This is a demonstration of a multi line comment. */
+ 
+ // below is a declaration of a function. Also, this is a one line comment.
+ func ask_for_number() int {
+    var input int;   <-- this is a variable declaration. Also, this is another type of signle-line comments.
+    writeString("Enter a number: ");  <-- this is a function implemented inside the pilib.h file(like printf)
+    input = readInt();  <-- readInt() reads an integer from the input.
+    return input;
+}
+
+func do_nothing() int{  <-- this function serves no purpose.
+    var a int;
+    a=10;  // the statements section is mandatory.
+    // do nothing!
+}
+
+func is_prime(input int) int {
+    var prime_flag,counter int;
+    if (input == 0)
+        return 1;
+    for (counter=2;counter<input;counter = counter + 1){  
+        if (input%counter==0){  <-- if a divisor is found...
+            return 1; <-- ...it means that the input is not prime.
+        }
+    }
+    return prime_flag;  <-- if prime, the program reaches that point and returns 0
+}
+
+func begin() {  
+    var given_number=1,return_value=1, num1, num2,counter,count_tmp,counter2 = 0, distance int; <-- multiple variable declaration
+    writeString("This is a program that asks for a number \n");
+    writeString("and shows you the twin primes until there.\n");
+    given_number = ask_for_number(); <-- ask for a number from the input
+    for (counter=2;counter<given_number;counter=counter+1){
+        if((is_prime(counter)==0) and (is_prime(counter+2)==0)){  // returning 0 means it is a prime!
+            writeString("The numbers ");
+            writeInt(counter);
+            writeString(" and ");
+            count_tmp = counter + 2;
+            writeInt(count_tmp);
+            writeString(" are twin primes!!\n");
+            counter2 = counter2 + 1;
+        }  <-- at the end of an if/else statement, there is no semicolon.
+    }
+    writeString("Found a total of ");
+    writeInt(counter2);
+    writeString(" twin primes. Continue to prove the twin prime conjecture.\n");
+}
  ```
  
