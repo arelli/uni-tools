@@ -97,6 +97,7 @@ STR \"[^\"\n]*\"
 . {fprintf(stderr,"Lexical analyzer output: unrecognized token \"%s\" in line %d\n.", yytext, line_num);yylval.str = strdup(yytext); return ERROR_MESSAGE;}  /* when nothing of the above, show error info */
 
 "//"[^\n]*  		    /* we dont care about commentss */
+"<--"[^\n]*             /* beautified comment */ 
 "/*"                    {BEGIN(comm);}  /* begin "comment" state when you see this */
 <comm>[^*\n]*        
 <comm>"*"+[^*/\n]*   /* dont count * without / after them */
