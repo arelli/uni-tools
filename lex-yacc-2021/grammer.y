@@ -8,7 +8,7 @@
     extern int line_counter;
     
 %}
-
+%define parse.error verbose  // to have a verbose output for syntax errrs.
 %union{
     char* str;
 }
@@ -47,6 +47,8 @@
 %type <str> id_func_arr_solver id_func_arr_solver1 
 // declaration of the starting point of the parsing.
 %start prologue
+
+
 
 %%  // the beginning of the rules section
 prologue : lines{        // the print is at the top of the recursion tree! important.
