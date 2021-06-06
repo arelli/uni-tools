@@ -40,7 +40,7 @@
 %type <str> expression function_call  array_call list_of_arguments var_decl list_of_assignments array_type data_type
 %type <str> expr_or_string var_decl_section lines line const_decl const_decl_section prologue function_decl parameters
 %type <str> function_body  statement return_line assignment assignment_line if_stmt else_stmt statements for_loop while_loop
-%type <str> function_decl_section func_begin
+%type <str> function_decl_section func_begin function_body5
 %type <str> line1  line2  line3  line4  line5  line6 line7  line8  //priorities of body types
 %type <str> function_body1 function_body2 function_body3 function_body4 if_stmt1 if_stmt2 if_stmt3
 %type <str> id_func_arr_solver id_func_arr_solver1 id_or_array
@@ -86,19 +86,22 @@ function_decl_section : function_decl  | function_decl_section function_decl {$$
 
 function_decl : FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS data_type LEFT_CURLY function_body RIGHT_CURLY
 {$$ = template("%s %s(%s){\n%s\n}",$6, $2, $4,$8);}
+|FUNC ID LEFT_PARENTESIS parameters RIGHT_PARENTHESIS LEFT_CURLY function_body RIGHT_CURLY
+{$$ = template("void %s(%s){\n%s\n}", $2, $4,$7);}
 ;
 
 // the parameters that we give to a function.
-parameters : expr_or_string data_type{ $$ = template("%s %s",$2, $1);}
-           | parameters COMMA expr_or_string data_type {$$ = template("%s,%s %s",$1, $4,$3);};
+parameters : id_or_array data_type{ $$ = template("%s %s",$2, $1);}
+           | parameters COMMA id_or_array data_type {$$ = template("%s,%s %s",$1, $4,$3);};
            | %empty {$$="";}
 ;           
            
 // TODO: mke var and const decl section OPTIONAL! (and also statements optional!)
-function_body :  function_body1 | function_body2 | function_body3 | function_body4 ;
+function_body :  function_body1 | function_body2 | function_body3 | function_body4 | function_body5 ;
 
 // Implementation of "optional" features inside functions.(and their hierarchy)
 function_body1 :  var_decl_section  const_decl_section  statements {$$ = template("%s\n%s\n%s", $1,$2,$3);};
+function_body5 :  const_decl_section var_decl_section  statements {$$ = template("%s\n%s\n%s", $1,$2,$3);};
 function_body2 :  var_decl_section  statements {$$ = template("%s\n%s", $1,$2);};
 function_body3 :  const_decl_section  statements {$$ = template("%s\n%s", $1,$2);};
 function_body4 :  statements ;// only the statements are mandatory.
@@ -245,6 +248,7 @@ list_of_arguments : expr_or_string {$$ = template("%s",$1);}
 ;
 // the format of an array "call" or reference.                  
 array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1, $3);}
+           | ID LEFT_BRACKET  RIGHT_BRACKET {$$ = template("*%s",$1);}
 ;
 
 
