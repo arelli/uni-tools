@@ -73,14 +73,6 @@ STR \"[^\"\n]*\"
 "{" {return LEFT_CURLY;}
 "}" {return RIGHT_CURLY;}
 
-"readString"            {return READ_STRING; }  /* special PI Functions (given by the university)*/
-"readInt"               {return READ_INT; }
-"readReal"              {return READ_REAL; }
-"writeString"           {return WRITE_STRING; }
-"writeInt"              {return WRITE_INT; }
-"writeReal"             {return WRITE_REAL; }
-
-
  /* these have to be after the above rules! */
 {NUMBER} {yylval.str = strdup(yytext);return INT;}
 {REAL} {yylval.str = strdup(yytext);return REAL;}
