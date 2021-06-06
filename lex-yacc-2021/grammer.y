@@ -174,8 +174,8 @@ return_line : RETURN expr_or_string SEMIC{$$=template("return %s",$2);}
 // the assignments that go inside a variable or constant declaration
 list_of_assignments: ID ASSIGN  expr_or_string {$$ = template("%s=%s",$1,$3);}
                     | ID ASSIGN  expr_or_string COMMA list_of_assignments {$$ = template("%s=%s, %s",$1,$3,$5);}
-                    |ID COMMA list_of_assignments {$$=template("%s,%s",$1,$3);}
-                    |ID {$$=template("%s",$1);};
+                    |id_or_array COMMA list_of_assignments {$$=template("%s,%s",$1,$3);}
+                    |id_or_array {$$=template("%s",$1);};
                     
 // TODO: make this rule recognize special functions. It doesnt, even if they are here.                    
 expr_or_string:  special_functions_read | special_functions_write |expression | STR ;  // we want to assign either an expression, or a string.
