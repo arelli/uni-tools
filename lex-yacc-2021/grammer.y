@@ -40,8 +40,7 @@
 %type <str> expression function_call  array_call list_of_arguments var_decl list_of_assignments array_type data_type
 %type <str> expr_or_string var_decl_section lines line const_decl const_decl_section prologue function_decl parameters
 %type <str> function_body  statement return_line assignment assignment_line if_stmt else_stmt statements for_loop while_loop
-%type <str> function_decl_section read_string read_int read_real write_string write_int write_real
-%type <str> special_functions_read special_functions_write  func_begin
+%type <str> function_decl_section func_begin
 %type <str> line1  line2  line3  line4  line5  line6 line7  line8  //priorities of body types
 %type <str> function_body1 function_body2 function_body3 function_body4 if_stmt1 if_stmt2 if_stmt3
 %type <str> id_func_arr_solver id_func_arr_solver1 id_or_array
@@ -116,7 +115,6 @@ statement : assignment_line {$$ = template("%s;",$1);}
              | BREAK SEMIC {$$ = template("break;");};  
              | CONTINUE SEMIC {$$ = template("continue;");}; 
              | while_loop | for_loop
-             | special_functions_read | special_functions_write
 ;
 
 // working for loop transpiler          
@@ -178,7 +176,7 @@ list_of_assignments: ID ASSIGN  expr_or_string {$$ = template("%s=%s",$1,$3);}
                     |id_or_array {$$=template("%s",$1);};
                     
 // TODO: make this rule recognize special functions. It doesnt, even if they are here.                    
-expr_or_string:  special_functions_read | special_functions_write |expression | STR ;  // we want to assign either an expression, or a string.
+expr_or_string: expression | STR ;  // we want to assign either an expression, or a string.
 
 // a list of the data types("int","real","bool" etc.)
 data_type:  // int-->int , real --> double, string-->char*, bool--> int(0 or 1) etc
@@ -249,30 +247,6 @@ list_of_arguments : expr_or_string {$$ = template("%s",$1);}
 array_call : ID LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("%s[%s]",$1, $3);}
 ;
 
-// special function calls
-
-read_string: READ_STRING LEFT_PARENTESIS RIGHT_PARENTHESIS  { $$ = template("readString()"); };
-
-read_int: READ_INT LEFT_PARENTESIS RIGHT_PARENTHESIS  { $$ = template("readInt()"); };
-
-read_real: READ_REAL LEFT_PARENTESIS RIGHT_PARENTHESIS  { $$ = template("readReal()");};
-
-write_string : WRITE_STRING LEFT_PARENTESIS ID RIGHT_PARENTHESIS SEMIC { $$ = template("writeString(%s);", $3); }
-       | WRITE_STRING LEFT_PARENTESIS STR RIGHT_PARENTHESIS SEMIC { $$ = template("writeString(%s);", $3); }
-;
-
-
-write_int : WRITE_INT LEFT_PARENTESIS ID RIGHT_PARENTHESIS SEMIC { $$ = template("writeInt(%s);", $3); }
-       | WRITE_INT LEFT_PARENTESIS INT RIGHT_PARENTHESIS SEMIC     { $$ = template("writeInt(%s);", $3); }
-;
-
-write_real : WRITE_REAL LEFT_PARENTESIS ID RIGHT_PARENTHESIS SEMIC { $$ = template("writeReal(%s);", $3); }
-       | WRITE_REAL LEFT_PARENTESIS REAL RIGHT_PARENTHESIS SEMIC { $$ = template("writeReal(%s);", $3); }
-;
-
-// just to gather read functions and write finctions into two groups.
-special_functions_read: read_int | read_real | read_string ;
-special_functions_write :  write_int | write_real | write_string;
 
 %%
 void main() {
