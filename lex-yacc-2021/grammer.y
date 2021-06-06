@@ -226,11 +226,12 @@ expression :  LEFT_PARENTESIS expression RIGHT_PARENTHESIS { $$ = template("(%s)
 ;
        
 id_func_arr_solver : ID id_func_arr_solver1 {$$ = template("%s %s", $1, $2);}
+                    |ID LEFT_BRACKET RIGHT_BRACKET {$$ = template("*%s", $1);}
                  
  
 id_func_arr_solver1: LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS {$$ = template("(%s)",$2);};  // for the function
                    | LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("[%s]", $2);}  // for the array
-                   | LEFT_BRACKET RIGHT_BRACKET {$$ = template("*");}
+                   
  ;                
                    
 //id_func_arr_solver3 : ID | id_func_arr_solver
