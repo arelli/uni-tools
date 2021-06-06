@@ -44,7 +44,7 @@
 %type <str> special_functions_read special_functions_write  func_begin
 %type <str> line1  line2  line3  line4  line5  line6 line7  line8  //priorities of body types
 %type <str> function_body1 function_body2 function_body3 function_body4 if_stmt1 if_stmt2 if_stmt3
-%type <str> id_func_arr_solver id_func_arr_solver1 
+%type <str> id_func_arr_solver id_func_arr_solver1 id_or_array
 // declaration of the starting point of the parsing.
 %start prologue
 
@@ -147,8 +147,10 @@ else_stmt : ELSE statement {$$ = template("else \n %s", $2);};
 // a line where an assignment takes place
 assignment_line : assignment SEMIC {$$ = template("%s", $1);};
 
+id_or_array: ID | array_call ;  // to accept array " calls" at the left side of an assignment
+
 // wee need an assignment without a SEMIC for use inside the for() loop
-assignment : ID ASSIGN expr_or_string {$$ = template("%s=%s", $1,$3);};
+assignment : id_or_array ASSIGN expr_or_string {$$ = template("%s=%s", $1,$3);};
 
 // single constant declaration grammar 
 const_decl : CONST list_of_assignments data_type SEMIC {$$ = template("const %s %s;", $3,$2);}
@@ -188,7 +190,9 @@ data_type:  // int-->int , real --> double, string-->char*, bool--> int(0 or 1) 
 ;
   
 array_type : array_call data_type {$$ = template("%s %s",$2, $1);}  // TODO: doesnt accept this grammar, fix it.
+           | LEFT_BRACKET expression RIGHT_BRACKET data_type {$$ = template("[%s] %s", $2, $4);} 
            | LEFT_BRACKET RIGHT_BRACKET data_type {$$ = template("%s*",$3);}
+           
 
 ;
 // all the mathematical and logical expressions, including variable names and function calls.
@@ -218,6 +222,7 @@ expression :  LEFT_PARENTESIS expression RIGHT_PARENTHESIS { $$ = template("(%s)
        //| function_call {$$ = $1;} 
        //| array_call {$$ = $1;}  // array call  //the other last confl comes from ID,func_call and array_call
        | id_func_arr_solver
+       // | ID LEFT_BRACKET RIGHT_BRACKET {$$ = template("%s*", $1);}
 ;
        
 id_func_arr_solver : ID id_func_arr_solver1 {$$ = template("%s %s", $1, $2);}
@@ -225,7 +230,8 @@ id_func_arr_solver : ID id_func_arr_solver1 {$$ = template("%s %s", $1, $2);}
  
 id_func_arr_solver1: LEFT_PARENTESIS list_of_arguments RIGHT_PARENTHESIS {$$ = template("(%s)",$2);};  // for the function
                    | LEFT_BRACKET expression RIGHT_BRACKET {$$ = template("[%s]", $2);}  // for the array
- ;                  //| %empty {$$ = template("");}  // for the ID, spits conflict
+                   | LEFT_BRACKET RIGHT_BRACKET {$$ = template("*");}
+ ;                
                    
 //id_func_arr_solver3 : ID | id_func_arr_solver
  
