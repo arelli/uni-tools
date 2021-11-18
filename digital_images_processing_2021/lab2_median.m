@@ -1,23 +1,32 @@
-fprintf('this is a test');
-%RGB = imread('Median_Image2.png') ; % load the image
+clear all;
+%RGB = imread('Mean_Image2.jpeg') ; % load the image
 %photo_in = rgb2gray(RGB);
-photo_in = imread('Median_Image1.png')
+photo_in = imread('Median_Image1.png');
 
+
+whos photo_in;
 
 % get the size of the input image
 width = size(photo_in,1);
+%fprintf(int2str(width));
 height = size(photo_in,2);
+%fprintf(int2str(height));
+figure
+imshow(photo_in);
 
 
-imshow(photo_in)
-
-
-kernel_size = 3;
+kernel_size = 5;
 
 % pad the image around
-padded_image = padarray(photo_in,kernel_size)  % pad in sides...
-padded_image = padarray(padded_image.',kernel_size)  % pad in the other two sides..
-padded_image = padded_image.'  % restore orientation
+padded_image = padarray(photo_in,kernel_size, 'replicate');  % pad in sides...
+padded_image = padarray(padded_image.',kernel_size, 'replicate');  % pad in the other two sides..
+padded_image = padded_image.';  % restore orientation
+
+fprintf('The padded image is: ');
+whos padded_image;
+
+figure
+imshow(padded_image);
 
 
 
@@ -34,8 +43,8 @@ total = 1;
 % the extra rows and columns the filter kernel can occupy
 extra = (kernel_size-1)/2;
 
-for x = extra+1 : height+ extra-1 % +1 to avoid out of bounds accesses
-    for y = extra+1 : width + extra- 1
+for x = extra+1 : height+ extra +1 % +1 to avoid out of bounds accesses
+    for y = extra+1 : width + extra +1
         % implement the filter kernel. Go from (x-extra,y-extra) which is 
         %the top left kernel pixel, to (x+extra,y+extra), which is the 
         % lowest left pixel.
@@ -56,5 +65,5 @@ for x = extra+1 : height+ extra-1 % +1 to avoid out of bounds accesses
 end
 
 figure
-imshow(new_image)
+imshow(new_image);
 
