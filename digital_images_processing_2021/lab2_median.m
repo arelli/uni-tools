@@ -14,8 +14,10 @@ height = size(photo_in,2);
 figure
 imshow(photo_in);
 
+prompt = 'What is the kernel dimension you want? ';
+kernel_size = input(prompt)
 
-kernel_size = 5;
+
 
 % pad the image around
 padded_image = padarray(photo_in,kernel_size, 'replicate');  % pad in sides...
@@ -27,18 +29,13 @@ whos padded_image;
 
 figure
 imshow(padded_image);
-
-
-
 %whos padded_image;
 new_image = zeros(height,width);
-
 
 counter = 1;
 neighbors = zeros(kernel_size*kernel_size);
 mean = 1;
 total = 1;
-
 
 % the extra rows and columns the filter kernel can occupy
 extra = (kernel_size-1)/2;
