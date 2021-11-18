@@ -15,7 +15,8 @@ figure
 imshow(photo_in);
 
 
-kernel_size = 5;
+prompt = 'What is the kernel dimension you want? ';
+kernel_size = input(prompt)
 
 % pad the image around
 padded_image = padarray(photo_in,kernel_size,0);  % pad in sides...
