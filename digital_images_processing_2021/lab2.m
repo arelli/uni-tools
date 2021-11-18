@@ -4,7 +4,7 @@ photo_in = rgb2gray(RGB);
 %imshow(photo_in)
 
 
-kernel_size = 5;
+kernel_size = 11;
 
 % pad the image around
 padded_image = padarray(photo_in,kernel_size)  % pad in sides...
@@ -44,7 +44,9 @@ for x = extra+1 : 537+ extra+ 1 % +1 to avoid out of bounds accesses
         mean = total/(counter-1);
         
         total = 0;
-        new_image(x-extra,y-extra) = int8(mean);
+        new_image(x-extra,y-extra) = mean/255; % IMPORTANT: divide by 255, 
+                                               % because the pixels take 
+                                               % values from 0 to 1!!!
         counter = 1;
     end
 end
