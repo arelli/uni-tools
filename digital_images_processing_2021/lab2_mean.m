@@ -11,14 +11,15 @@ height = size(photo_in,2);
 
 imshow(photo_in)
 
-
-kernel_size = 3;
+prompt = 'What is the kernel dimension you want? ';
+kernel_size = input(prompt)
 
 % pad the image around
 padded_image = padarray(photo_in,kernel_size)  % pad in sides...
 padded_image = padarray(padded_image.',kernel_size)  % pad in the other two sides..
 padded_image = padded_image.'  % restore orientation
-
+figure
+imshow(padded_image)
 
 
 %whos padded_image;
