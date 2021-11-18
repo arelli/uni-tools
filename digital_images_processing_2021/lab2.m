@@ -1,10 +1,18 @@
 fprintf('this is a test');
-RGB = imread('Mean_Image1.jpeg') ; % load the image
-photo_in = rgb2gray(RGB);
-%imshow(photo_in)
+%RGB = imread('Mean_Image1.jpeg') ; % load the image
+%photo_in = rgb2gray(RGB);
+photo_in = imread('Mean_Image2.jpeg')
 
 
-kernel_size = 11;
+% get the size of the input image
+width = size(photo_in,1);
+height = size(photo_in,2);
+
+
+imshow(photo_in)
+
+
+kernel_size = 3;
 
 % pad the image around
 padded_image = padarray(photo_in,kernel_size)  % pad in sides...
@@ -14,7 +22,7 @@ padded_image = padded_image.'  % restore orientation
 
 
 %whos padded_image;
-new_image = zeros(537,537);
+new_image = zeros(height,width);
 
 
 counter = 1;
@@ -26,8 +34,8 @@ total = 1;
 % the extra rows and columns the filter kernel can occupy
 extra = (kernel_size-1)/2;
 
-for x = extra+1 : 537+ extra+ 1 % +1 to avoid out of bounds accesses
-    for y = extra+1 : 537 + extra+ 1
+for x = extra+1 : height+ extra+ 1 % +1 to avoid out of bounds accesses
+    for y = extra+1 : width + extra+ 1
         % implement the filter kernel. Go from (x-extra,y-extra) which is 
         %the top left kernel pixel, to (x+extra,y+extra), which is the 
         % lowest left pixel.
