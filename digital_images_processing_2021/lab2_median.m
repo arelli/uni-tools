@@ -1,7 +1,7 @@
 clear all;
-%RGB = imread('Mean_Image2.jpeg') ; % load the image
+%RGB = imread('Median_Image.png') ; % load the image
 %photo_in = rgb2gray(RGB);
-photo_in = imread('Median_Image1.png');
+photo_in = imread('Median_Image2.png');
 
 
 whos photo_in;
@@ -40,10 +40,10 @@ total = 1;
 % the extra rows and columns the filter kernel can occupy
 extra = (kernel_size-1)/2;
 
-for x = extra+1 : height+ extra +1 % +1 to avoid out of bounds accesses
-    for y = extra+1 : width + extra +1
+for x = extra+1 : width + extra +1 % +1 to avoid out of bounds accesses
+    for y = extra+1 : height + extra +1
         % implement the filter kernel. Go from (x-extra,y-extra) which is 
-        %the top left kernel pixel, to (x+extra,y+extra), which is the 
+        % the top left kernel pixel, to (x+extra,y+extra), which is the 
         % lowest left pixel.
         for xx = -extra : extra
            for yy = -extra : extra
@@ -60,6 +60,8 @@ for x = extra+1 : height+ extra +1 % +1 to avoid out of bounds accesses
         counter = 1;
     end
 end
+
+whos new_image
 
 figure
 imshow(new_image);
