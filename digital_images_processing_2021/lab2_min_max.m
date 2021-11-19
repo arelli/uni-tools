@@ -44,8 +44,8 @@ total = 1;
 % the extra rows and columns the filter kernel can occupy
 extra = (kernel_size-1)/2;
 
-for x = extra+1 : height+ extra +1 % +1 to avoid out of bounds accesses
-    for y = extra+1 : width + extra +1
+for x = extra+1 : width + extra +1 % +1 to avoid out of bounds accesses
+    for y = extra+1 : height + extra +1
         % implement the filter kernel. Go from (x-extra,y-extra) which is 
         %the top left kernel pixel, to (x+extra,y+extra), which is the 
         % lowest left pixel.
@@ -68,8 +68,8 @@ figure
 imshow(new_image);
 
 
-for x = extra+1 : height+ extra +1 % +1 to avoid out of bounds accesses
-    for y = extra+1 : width + extra +1
+for x = extra+1 : width+ extra +1 % +1 to avoid out of bounds accesses
+    for y = extra+1 : height + extra +1
         % implement the filter kernel. Go from (x-extra,y-extra) which is 
         %the top left kernel pixel, to (x+extra,y+extra), which is the 
         % lowest left pixel.
