@@ -1,7 +1,7 @@
 clear all;
 RGB = imread('Min_Max_Image1.jpeg') ; % load the image
 photo_in = rgb2gray(RGB);
-%photo_in = imread('Min_Max_Image2.jpeg');
+%photo_in = imread('Min_Max_Image1.jpeg');
 
 
 whos photo_in;
@@ -11,8 +11,8 @@ width = size(photo_in,1);
 
 height = size(photo_in,2);
 
-figure
-imshow(photo_in);
+%figure
+%imshow(photo_in);
 
 
 prompt = 'What is the kernel X dimension you want? ';
@@ -35,7 +35,8 @@ imshow(padded_image);
 
 
 %whos padded_image;
-new_image = zeros(height,width);
+new_image = zeros(height-1,width-1);
+new_image2 = zeros(height-1,width-1);
 
 
 counter = 1;
@@ -48,8 +49,8 @@ total = 1;
 extra_x = (kernel_x-1)/2;
 extra_y = (kernel_y-1)/2;
 
-for x = extra_x+1 : width + extra_x +1 % +1 to avoid out of bounds accesses
-    for y = extra_y+1 : height + extra_y +1
+for x = extra_x+1 : width + extra_x  % +1 to avoid out of bounds accesses
+    for y = extra_y+1 : height + extra_y 
         % implement the filter kernel. Go from (x-extra,y-extra) which is 
         %the top left kernel pixel, to (x+extra,y+extra), which is the 
         % lowest left pixel.
@@ -72,8 +73,8 @@ figure
 imshow(new_image);
 
 
-for x = extra_x+1 : width + extra_x +1 % +1 to avoid out of bounds accesses
-    for y = extra_y+1 : height + extra_y +1
+for x = extra_x+1 : width + extra_x    % +1 to avoid out of bounds accesses
+    for y = extra_y+1 : height + extra_y 
         % implement the filter kernel. Go from (x-extra,y-extra) which is 
         %the top left kernel pixel, to (x+extra,y+extra), which is the 
         % lowest left pixel.
@@ -87,11 +88,12 @@ for x = extra_x+1 : width + extra_x +1 % +1 to avoid out of bounds accesses
         total = 0;
         
         neighbors = sort(neighbors);
-        new_image(x-extra_x,y-extra_y) = neighbors(counter-1)/255; 
+        new_image2(x-extra_x,y-extra_y) = neighbors(counter-1)/255; 
         counter = 1;
     end
 end
 
 figure
-imshow(new_image);
+imshow(new_image2);
+
 
