@@ -112,11 +112,21 @@ title('skeletonized')
 pause(1)
 
 
-% HOLE FILLING
-%{
-Connection of the skeleton: finally, you have to try to fill the
-holes in the skeleton as much as possible and eliminate the small
-pieces of skeleton that may remain in the background. Combine
-different features of bwmorph() to achieve a result as shown in
-Figure 2 or alternatively use the imfill() function.
-%}
+
+%photo_in_conv = 255 * repmat(uint8(photo_in_conv), 1, 1, 3);
+R   = 1;  % Value in range [0, 1]
+G   = 0;
+B   = 0;
+photo_in_conv = cat(3, photo_in_conv * R, photo_in_conv * G, photo_in_conv * B);
+
+figure
+imshow(photo_in_conv)
+title('RGB agen')
+pause(1)
+
+
+figure
+imshow(photo_in_conv+im2double(RGB))
+title('Final image')
+pause(1)
+
