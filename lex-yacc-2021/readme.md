@@ -181,4 +181,5 @@ func begin() {
     writeString(" twin primes. Continue to prove the twin prime conjecture.\n");
 }
  ```
+ For any questions, feel free to open an issue!
  
